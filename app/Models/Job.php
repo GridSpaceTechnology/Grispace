@@ -1,0 +1,120 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Job extends Model
+{
+    protected $table = 'job_listings';
+
+    protected $fillable = [
+        'employer_id',
+        'company_id',
+        'title',
+        'role',
+        'description',
+        'industry',
+        'employment_type',
+        'salary_min',
+        'salary_max',
+        'work_preference',
+        'minimum_experience',
+        'required_skills_json',
+        'personality_preferences_json',
+        'temperament_preference',
+        'status',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'salary_min' => 'decimal:2',
+            'salary_max' => 'decimal:2',
+            'required_skills_json' => 'array',
+            'personality_preferences_json' => 'array',
+        ];
+    }
+
+    public function employer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'employer_id');
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function jobSkills(): HasMany
+    {
+        return $this->hasMany(JobSkill::class);
+    }
+
+    public function requiredSkills(): HasMany
+    {
+        return $this->hasMany(JobSkill::class)->where('is_required', true);
+    }
+
+    public function jobRequirements(): HasMany
+    {
+        return $this->hasMany(JobRequirement::class);
+    }
+
+    public function mandatoryRequirements(): HasMany
+    {
+        return $this->hasMany(JobRequirement::class)->where('is_mandatory', true);
+    }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(JobApplication::class);
+    }
+
+    public function shortlists(): HasMany
+    {
+        return $this->hasMany(EmployerShortlist::class);
+    }
+
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(Interview::class);
+    }
+
+    public function getRequiredSkills(): array
+    {
+        return $this->required_skills_json ?? [];
+    }
+
+    public function getDepartmentAttribute(): string
+    {
+        return $this->role ?? '';
+    }
+
+    public function getLocationAttribute(): ?string
+    {
+        return $this->attributes['location'];
+    }
+
+    public function getExperienceRequiredAttribute(): int
+    {
+        return $this->minimum_experience ?? 0;
+    }
+
+    public function getJobDescriptionAttribute(): string
+    {
+        return $this->description ?? '';
+    }
+
+    public function isOpen(): bool
+    {
+        return $this->status === 'open';
+    }
+
+    public function isClosed(): bool
+    {
+        return in_array($this->status, ['closed', 'filled']);
+    }
+}
