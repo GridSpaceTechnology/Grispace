@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('candidates', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('current_role', 255)->nullable()->index();
             $table->string('desired_role', 255)->nullable()->index();
             $table->unsignedSmallInteger('years_of_experience')->nullable()->index();
