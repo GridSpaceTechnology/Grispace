@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('job_requirements', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('job_id')->constrained()->cascadeOnDelete();
+            $table->id();
+            $table->foreignId('job_id')->constrained()->cascadeOnDelete();
             $table->enum('requirement_type', [
                 'skill',
                 'experience',
@@ -33,8 +33,8 @@ return new class extends Migration
         });
 
         Schema::create('job_skills', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('job_id')->constrained()->cascadeOnDelete();
+            $table->id();
+            $table->foreignId('job_id')->constrained()->cascadeOnDelete();
             $table->foreignId('skill_id')->constrained()->cascadeOnDelete();
             $table->unsignedTinyInteger('min_proficiency')->nullable();
             $table->boolean('is_required')->default(true)->index();
