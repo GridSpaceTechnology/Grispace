@@ -32,7 +32,7 @@
 <div class="w-full">
     @if($showLabel)
         <div class="flex justify-between items-center mb-1">
-            <span class="text-sm font-medium text-gray-700">{{ $slot ?: 'Progress' }}</span>
+            <span class="text-sm font-medium text-gray-700">{{ $slot->isEmpty() ? 'Progress' : $slot }}</span>
             <span class="text-sm font-medium text-gray-700">{{ round($percentage) }}%</span>
         </div>
     @endif

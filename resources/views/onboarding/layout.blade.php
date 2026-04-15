@@ -20,7 +20,7 @@
             <x-progress-bar :value="$step ?? 1" :max="$totalSteps ?? 8" size="sm" color="indigo" class="mb-8" />
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                {{ $slot }}
+                @yield('content')
             </div>
 
             @if(($step ?? 1) > 1)
