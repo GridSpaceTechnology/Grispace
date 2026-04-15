@@ -2225,7 +2225,7 @@ namespace App\Models {
 	 * @property string $value
 	 * @property string $signal_type
 	 * @property int $category_id
-	 * @property string $user_id
+	 * @property int $user_id
 	 * @property int $id
 	 * @property-read \App\Models\User $user
 	 * @property-read \App\Models\SignalCategory $category

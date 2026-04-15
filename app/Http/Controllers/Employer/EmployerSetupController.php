@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class EmployerSetupController extends Controller
 {
-    public function show(): View
+    public function show(): View|RedirectResponse
     {
         $user = auth()->user();
 

@@ -18,6 +18,7 @@ class User extends Authenticatable
         'password',
         'role',
         'welcome_dismissed_at',
+        'onboarding_completed',
     ];
 
     protected $hidden = [
