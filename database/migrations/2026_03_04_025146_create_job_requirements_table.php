@@ -32,7 +32,10 @@ return new class extends Migration
                 ['job_id', 'requirement_type', 'requirement_value'],
                 'job_req_unique'
             );
-            $table->index(['requirement_type', 'requirement_value', 'is_mandatory']);
+            $table->index(
+                ['requirement_type', 'requirement_value', 'is_mandatory'],
+                'job_req_idx'
+            );
         });
 
         Schema::create('job_skills', function (Blueprint $table) {
