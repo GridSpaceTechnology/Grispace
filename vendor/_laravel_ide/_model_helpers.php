@@ -5,7 +5,31 @@ namespace App\Models {
     /**
      * App\Models\AuditLog
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property array|null $metadata
+     * @property string|null $user_agent
+     * @property string|null $ip_address
+     * @property array|null $new_values
+     * @property array|null $old_values
+     * @property string|null $entity_id
+     * @property string $entity_type
+     * @property string $action
+     * @property int|null $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereAction($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereEntityType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereEntityId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereOldValues($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereNewValues($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereIpAddress($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereUserAgent($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereMetadata($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<AuditLog>|AuditLog query()
@@ -301,7 +325,23 @@ namespace App\Models {
     /**
      * App\Models\CandidateAssessment
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $temperament_type
+     * @property array|null $personality_scores_json
+     * @property array|null $subskill_breakdown_json
+     * @property int $skill_score
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment whereSkillScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment whereSubskillBreakdownJson($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment wherePersonalityScoresJson($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment whereTemperamentType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateAssessment>|CandidateAssessment query()
@@ -597,7 +637,21 @@ namespace App\Models {
     /**
      * App\Models\CandidateEducation
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property int $year_completed
+     * @property string $qualification
+     * @property string $institution
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation whereInstitution($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation whereQualification($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation whereYearCompleted($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateEducation>|CandidateEducation query()
@@ -893,7 +947,23 @@ namespace App\Models {
     /**
      * App\Models\CandidateExperience
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $description
+     * @property string $duration
+     * @property string $role
+     * @property string $company
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience whereCompany($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience whereRole($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience whereDuration($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience whereDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateExperience>|CandidateExperience query()
@@ -1189,7 +1259,27 @@ namespace App\Models {
     /**
      * App\Models\CandidateMedia
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $github_url
+     * @property string|null $linkedin_url
+     * @property array|null $portfolio_links_json
+     * @property string $cv_path
+     * @property string $role_video_url
+     * @property string|null $intro_video_url
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia whereIntroVideoUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia whereRoleVideoUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia whereCvPath($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia wherePortfolioLinksJson($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia whereLinkedinUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia whereGithubUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateMedia>|CandidateMedia query()
@@ -1485,7 +1575,19 @@ namespace App\Models {
     /**
      * App\Models\CandidatePreference
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property array|null $motivation_drivers_json
+     * @property string|null $organizational_type
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidatePreference>|CandidatePreference whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidatePreference>|CandidatePreference whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidatePreference>|CandidatePreference whereOrganizationalType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidatePreference>|CandidatePreference whereMotivationDriversJson($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidatePreference>|CandidatePreference whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidatePreference>|CandidatePreference whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<CandidatePreference>|CandidatePreference newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidatePreference>|CandidatePreference newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidatePreference>|CandidatePreference query()
@@ -1781,7 +1883,43 @@ namespace App\Models {
     /**
      * App\Models\CandidateProfile
      *
+     * @property string|null $ai_last_generated_at
+     * @property string|null $ai_recommendation
+     * @property string|null $ai_risks
+     * @property string|null $ai_strengths
+     * @property string|null $ai_summary
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property int $profile_completion_percentage
+     * @property string|null $greatest_achievement
+     * @property string|null $work_preference
+     * @property float|null $salary_expectation
+     * @property string|null $employment_type_preference
+     * @property string|null $industry
+     * @property int $years_of_experience
+     * @property string|null $desired_role
+     * @property string|null $current_role
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereCurrentRole($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereDesiredRole($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereYearsOfExperience($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereIndustry($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereEmploymentTypePreference($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereSalaryExpectation($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereWorkPreference($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereGreatestAchievement($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereProfileCompletionPercentage($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereUpdatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereAiSummary($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereAiStrengths($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereAiRisks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereAiRecommendation($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile whereAiLastGeneratedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateProfile>|CandidateProfile query()
@@ -2077,8 +2215,32 @@ namespace App\Models {
     /**
      * App\Models\CandidateSignal
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property \Illuminate\Support\Carbon|null $verified_at
+     * @property boolean $is_verified
+     * @property int|null $years_experience
+     * @property int|null $proficiency_level
+     * @property string|null $metadata
+     * @property string $value
+     * @property string $signal_type
+     * @property int $category_id
+     * @property string $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
      * @property-read \App\Models\SignalCategory $category
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereCategoryId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereSignalType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereValue($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereMetadata($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereProficiencyLevel($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereYearsExperience($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereIsVerified($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereVerifiedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateSignal>|CandidateSignal query()
@@ -2374,8 +2536,20 @@ namespace App\Models {
     /**
      * App\Models\CandidateSkill
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property int $proficiency_level
+     * @property string $skill_name
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
      * @property-read \App\Models\Skill $skill
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSkill>|CandidateSkill whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSkill>|CandidateSkill whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSkill>|CandidateSkill whereSkillName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSkill>|CandidateSkill whereProficiencyLevel($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSkill>|CandidateSkill whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<CandidateSkill>|CandidateSkill whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateSkill>|CandidateSkill newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateSkill>|CandidateSkill newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<CandidateSkill>|CandidateSkill query()
@@ -2671,9 +2845,59 @@ namespace App\Models {
     /**
      * App\Models\Company
      *
+     * @property string $work_model
+     * @property string|null $culture_description
+     * @property string|null $twitter_url
+     * @property string|null $instagram_url
+     * @property string|null $linkedin_url
+     * @property string|null $phone_number
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property boolean $is_verified
+     * @property array|null $benefits_json
+     * @property array|null $culture_values_json
+     * @property string|null $location_country
+     * @property string|null $location
+     * @property string|null $cover_image_url
+     * @property string|null $logo_url
+     * @property string|null $website
+     * @property integer|null $founded_year
+     * @property string|null $company_size
+     * @property string|null $industry
+     * @property string|null $description
+     * @property string|null $tagline
+     * @property string $slug
+     * @property string $name
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Job> $jobs
      * @property-read int|null $jobs_count
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereSlug($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereTagline($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereIndustry($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereCompanySize($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereFoundedYear($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereWebsite($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereLogoUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereCoverImageUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereLocation($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereLocationCountry($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereCultureValuesJson($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereBenefitsJson($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereIsVerified($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereUpdatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company wherePhoneNumber($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereLinkedinUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereInstagramUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereTwitterUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereCultureDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company whereWorkModel($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Company>|Company query()
@@ -2969,7 +3193,27 @@ namespace App\Models {
     /**
      * App\Models\Consent
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property \Illuminate\Support\Carbon|null $revoked_at
+     * @property \Illuminate\Support\Carbon|null $granted_at
+     * @property string|null $user_agent
+     * @property string|null $ip_address
+     * @property boolean $consent_given
+     * @property string $consent_type
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereConsentType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereConsentGiven($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereIpAddress($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereUserAgent($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereGrantedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereRevokedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Consent>|Consent query()
@@ -3265,12 +3509,26 @@ namespace App\Models {
     /**
      * App\Models\Conversation
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property \Illuminate\Support\Carbon|null $last_message_at
+     * @property int|null $job_id
+     * @property int $candidate_id
+     * @property int $employer_id
+     * @property int $id
      * @property-read \App\Models\User $employer
      * @property-read \App\Models\User $candidate
      * @property-read \App\Models\Job $job
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Message> $messages
      * @property-read int|null $messages_count
      * @property-read \App\Models\Message $latestMessage
+     * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation whereEmployerId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation whereCandidateId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation whereJobId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation whereLastMessageAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Conversation>|Conversation query()
@@ -3566,7 +3824,29 @@ namespace App\Models {
     /**
      * App\Models\EmployerCultureProfile
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property array|null $values
+     * @property string $collaboration_level
+     * @property string $work_pace
+     * @property string $decision_making_style
+     * @property string $innovation_level
+     * @property string $communication_style
+     * @property string $leadership_style
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereLeadershipStyle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereCommunicationStyle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereInnovationLevel($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereDecisionMakingStyle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereWorkPace($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereCollaborationLevel($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereValues($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerCultureProfile>|EmployerCultureProfile query()
@@ -3862,7 +4142,23 @@ namespace App\Models {
     /**
      * App\Models\EmployerHiringProfile
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property array|null $experience_levels
+     * @property array|null $departments
+     * @property array|null $typical_roles
+     * @property string $hiring_volume
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile whereHiringVolume($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile whereTypicalRoles($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile whereDepartments($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile whereExperienceLevels($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerHiringProfile>|EmployerHiringProfile query()
@@ -4158,7 +4454,21 @@ namespace App\Models {
     /**
      * App\Models\EmployerPreference
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property array|null $preferred_personality_traits
+     * @property string|null $preferred_temperament
+     * @property string|null $preferred_candidate_experience
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference wherePreferredCandidateExperience($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference wherePreferredTemperament($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference wherePreferredPersonalityTraits($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerPreference>|EmployerPreference query()
@@ -4454,7 +4764,29 @@ namespace App\Models {
     /**
      * App\Models\EmployerProfile
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $logo_path
+     * @property string|null $company_website
+     * @property string|null $company_description
+     * @property string|null $headquarters_location
+     * @property string $company_size
+     * @property string $industry
+     * @property string $company_name
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereCompanyName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereIndustry($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereCompanySize($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereHeadquartersLocation($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereCompanyDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereCompanyWebsite($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereLogoPath($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerProfile>|EmployerProfile query()
@@ -4750,9 +5082,23 @@ namespace App\Models {
     /**
      * App\Models\EmployerShortlist
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $notes
+     * @property int|null $job_id
+     * @property int $candidate_id
+     * @property int $employer_id
+     * @property int $id
      * @property-read \App\Models\User $employer
      * @property-read \App\Models\User $candidate
      * @property-read \App\Models\Job $job
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist whereEmployerId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist whereCandidateId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist whereJobId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist whereNotes($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<EmployerShortlist>|EmployerShortlist query()
@@ -5048,10 +5394,36 @@ namespace App\Models {
     /**
      * App\Models\Interview
      *
+     * @property string|null $location
+     * @property string|null $meeting_link
+     * @property int|null $job_application_id
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $notes
+     * @property string $status
+     * @property \Illuminate\Support\Carbon $scheduled_at
+     * @property string $interview_type
+     * @property int|null $job_id
+     * @property int $candidate_id
+     * @property int $employer_id
+     * @property int $id
      * @property-read \App\Models\User $employer
      * @property-read \App\Models\User $candidate
      * @property-read \App\Models\Job $job
      * @property-read \App\Models\JobApplication $jobApplication
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereEmployerId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereCandidateId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereJobId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereInterviewType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereScheduledAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereNotes($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereUpdatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereJobApplicationId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereMeetingLink($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview whereLocation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Interview>|Interview query()
@@ -5347,8 +5719,33 @@ namespace App\Models {
     /**
      * App\Models\Job
      *
-     * @property-read mixed $department
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property int $applications_count
+     * @property int $views_count
+     * @property string|null $expires_at
+     * @property string|null $published_at
+     * @property string $status
+     * @property string|null $nice_to_have
+     * @property string|null $temperament_preference
+     * @property string $experience_level
+     * @property int $minimum_experience
+     * @property string|null $location_country
+     * @property string $work_preference
+     * @property bool $salary_visible
+     * @property float|null $salary_max
+     * @property float|null $salary_min
+     * @property string $employment_type
+     * @property string|null $industry
+     * @property string $role
+     * @property string|null $description
+     * @property string $slug
+     * @property string $title
+     * @property int|null $company_id
+     * @property int $employer_id
+     * @property int $id
      * @property-read mixed $location
+     * @property-read mixed $department
      * @property-read mixed $experience_required
      * @property-read mixed $job_description
      * @property-read \App\Models\User $employer
@@ -5367,6 +5764,31 @@ namespace App\Models {
      * @property-read int|null $shortlists_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Interview> $interviews
      * @property-read int|null $interviews_count
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereEmployerId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereCompanyId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereTitle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereSlug($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereRole($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereIndustry($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereEmploymentType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereSalaryMin($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereSalaryMax($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereSalaryVisible($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereWorkPreference($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereLocationCountry($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereMinimumExperience($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereExperienceLevel($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereTemperamentPreference($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereNiceToHave($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job wherePublishedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereExpiresAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereViewsCount($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereApplicationsCount($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Job>|Job query()
@@ -5662,11 +6084,45 @@ namespace App\Models {
     /**
      * App\Models\JobApplication
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property \Illuminate\Support\Carbon|null $rejected_at
+     * @property \Illuminate\Support\Carbon|null $hired_at
+     * @property \Illuminate\Support\Carbon|null $offer_sent_at
+     * @property \Illuminate\Support\Carbon|null $interview_at
+     * @property \Illuminate\Support\Carbon|null $shortlisted_at
+     * @property \Illuminate\Support\Carbon|null $viewed_at
+     * @property \Illuminate\Support\Carbon $applied_at
+     * @property string|null $employer_note
+     * @property string|null $candidate_note
+     * @property array|null $screening_answers
+     * @property int $match_score
+     * @property string $status
+     * @property int $candidate_id
+     * @property int $job_id
+     * @property int $id
      * @property-read \App\Models\Job $job
      * @property-read \App\Models\User $candidate
      * @property-read \App\Models\MatchProfile $matchProfile
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\MatchProfile> $matchProfiles
      * @property-read int|null $match_profiles_count
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereJobId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereCandidateId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereMatchScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereScreeningAnswers($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereCandidateNote($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereEmployerNote($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereAppliedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereViewedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereShortlistedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereInterviewAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereOfferSentAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereHiredAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereRejectedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<JobApplication>|JobApplication query()
@@ -5962,7 +6418,25 @@ namespace App\Models {
     /**
      * App\Models\JobRequirement
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $metadata
+     * @property boolean $is_mandatory
+     * @property integer $weight
+     * @property string $requirement_value
+     * @property string $requirement_type
+     * @property string $job_id
+     * @property int $id
      * @property-read \App\Models\Job $job
+     * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement whereJobId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement whereRequirementType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement whereRequirementValue($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement whereWeight($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement whereIsMandatory($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement whereMetadata($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<JobRequirement>|JobRequirement query()
@@ -6258,8 +6732,24 @@ namespace App\Models {
     /**
      * App\Models\JobSkill
      *
+     * @property string|null $updated_at
+     * @property string|null $created_at
+     * @property int $weight
+     * @property boolean $is_required
+     * @property integer|null $min_proficiency
+     * @property int $skill_id
+     * @property string $job_id
+     * @property int $id
      * @property-read \App\Models\Job $job
      * @property-read \App\Models\Skill $skill
+     * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill whereJobId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill whereSkillId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill whereMinProficiency($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill whereIsRequired($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill whereWeight($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<JobSkill>|JobSkill query()
@@ -6555,8 +7045,44 @@ namespace App\Models {
     /**
      * App\Models\MatchProfile
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property boolean $is_latest
+     * @property \Illuminate\Support\Carbon $scored_at
+     * @property array|null $missing_requirements
+     * @property array|null $matched_requirements
+     * @property array|null $missing_skills
+     * @property array|null $matched_skills
+     * @property int $availability_score
+     * @property int $education_score
+     * @property int $personality_score
+     * @property int $work_preference_score
+     * @property int $salary_score
+     * @property int $experience_score
+     * @property int $skill_score
+     * @property int $overall_score
+     * @property int $application_id
+     * @property int $id
      * @property-read mixed $match_percentage
      * @property-read \App\Models\JobApplication $application
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereApplicationId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereOverallScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereSkillScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereExperienceScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereSalaryScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereWorkPreferenceScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile wherePersonalityScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereEducationScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereAvailabilityScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereMatchedSkills($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereMissingSkills($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereMatchedRequirements($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereMissingRequirements($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereScoredAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereIsLatest($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<MatchProfile>|MatchProfile query()
@@ -6852,8 +7378,22 @@ namespace App\Models {
     /**
      * App\Models\Message
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property boolean $is_read
+     * @property string $message
+     * @property int $sender_id
+     * @property int $conversation_id
+     * @property int $id
      * @property-read \App\Models\Conversation $conversation
      * @property-read \App\Models\User $sender
+     * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message whereConversationId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message whereSenderId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message whereMessage($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message whereIsRead($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Message>|Message query()
@@ -7149,8 +7689,24 @@ namespace App\Models {
     /**
      * App\Models\SignalCategory
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property boolean $is_active
+     * @property integer $display_order
+     * @property string|null $description
+     * @property string $slug
+     * @property string $name
+     * @property int $id
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CandidateSignal> $signals
      * @property-read int|null $signals_count
+     * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory whereName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory whereSlug($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory whereDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory whereDisplayOrder($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory whereIsActive($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<SignalCategory>|SignalCategory query()
@@ -7446,10 +8002,32 @@ namespace App\Models {
     /**
      * App\Models\Skill
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property boolean $is_active
+     * @property int $demand_score
+     * @property bool $is_verified
+     * @property string|null $description
+     * @property string $type
+     * @property string|null $category
+     * @property string $slug
+     * @property string $name
+     * @property int $id
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CandidateSkill> $candidateSkills
      * @property-read int|null $candidate_skills_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\JobSkill> $jobSkills
      * @property-read int|null $job_skills_count
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereSlug($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereCategory($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereIsVerified($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereDemandScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereIsActive($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Skill>|Skill query()
@@ -7745,6 +8323,7 @@ namespace App\Models {
     /**
      * App\Models\User
      *
+     * @property \Illuminate\Support\Carbon|null $welcome_dismissed_at
      * @property boolean $onboarding_completed
      * @property boolean $is_suspended
      * @property string $role
@@ -7794,6 +8373,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRole($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereIsSuspended($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereOnboardingCompleted($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereWelcomeDismissedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User query()
