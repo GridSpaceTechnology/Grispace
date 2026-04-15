@@ -28,7 +28,10 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps();
 
-            $table->unique(['job_id', 'requirement_type', 'requirement_value']);
+            $table->unique(
+                ['job_id', 'requirement_type', 'requirement_value'],
+                'job_req_unique'
+            );
             $table->index(['requirement_type', 'requirement_value', 'is_mandatory']);
         });
 
