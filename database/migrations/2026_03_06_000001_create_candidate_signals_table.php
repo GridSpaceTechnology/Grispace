@@ -20,8 +20,8 @@ return new class extends Migration
         });
 
         Schema::create('candidate_signals', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('category_id')->constrained('signal_categories')->cascadeOnDelete();
             $table->enum('signal_type', [
                 'technical_skill',
