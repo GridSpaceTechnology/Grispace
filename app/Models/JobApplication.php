@@ -68,6 +68,11 @@ class JobApplication extends Model
         return $this->belongsTo(User::class, 'candidate_id');
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'candidate_id');
+    }
+
     public function matchProfile(): HasOne
     {
         return $this->hasOne(MatchProfile::class)->where('is_latest', true);

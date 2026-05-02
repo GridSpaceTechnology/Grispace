@@ -281,30 +281,35 @@
     </div>
 </div>
 
-@push('scripts')
-<script>
-async function startConversation(candidateId) {
-    try {
-        const response = await fetch('/employer/messages/conversation/' + candidateId, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+</div>
+    
+    <script>
+        console.log('Script loaded directly');
+        async function startConversation(candidateId) {
+            console.log('startConversation called with ID:', candidateId);
+            try {
+                console.log('Sending request to:', '/employer/messages/conversation/' + candidateId);
+                const response = await fetch('/employer/messages/conversation/' + candidateId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    window.location.href = '/employer/messages/' + data.conversation_id;
+                } else {
+                    alert(data.error || 'Failed to start conversation');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to start conversation: ' + error.message);
             }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            window.location.href = '/employer/messages/' + data.conversation_id;
-        } else {
-            alert(data.error || 'Failed to start conversation');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to start conversation');
-    }
-}
-</script>
-@endpush
+    </script>
 @endsection

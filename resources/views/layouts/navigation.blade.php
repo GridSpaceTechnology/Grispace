@@ -28,12 +28,18 @@
                             <x-nav-link :href="route('employer.marketplace.index')" :active="request()->routeIs('employer.marketplace.*')">
                                 Talent Marketplace
                             </x-nav-link>
+                            <x-nav-link :href="route('employer.messages')" :active="request()->routeIs('employer.messages.*')">
+                                Messages
+                            </x-nav-link>
                         @else
                             <x-nav-link :href="route('candidate.dashboard')" :active="request()->routeIs('candidate.dashboard')">
                                 Dashboard
                             </x-nav-link>
                             <x-nav-link :href="route('candidate.jobs')" :active="request()->routeIs('candidate.jobs')">
                                 Browse Jobs
+                            </x-nav-link>
+                            <x-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">
+                                Messages
                             </x-nav-link>
                         @endif
                     </div>
@@ -89,8 +95,8 @@
                                 </x-dropdown-link>
                             @endif
 
-                            <x-dropdown-link :href="route('profile.edit')">
-                                Profile
+                            <x-dropdown-link :href="$isEmployer ? route('employer.profile.edit') : ($isAdmin ? route('profile.edit') : route('candidate.profile.edit'))">
+                                Settings
                             </x-dropdown-link>
 
                             <div class="border-t border-gray-200 my-1"></div>
@@ -148,12 +154,18 @@
                     <x-responsive-nav-link :href="route('employer.marketplace.index')" :active="request()->routeIs('employer.marketplace.*')">
                         Talent Marketplace
                     </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('employer.messages')" :active="request()->routeIs('employer.messages.*')">
+                        Messages
+                    </x-responsive-nav-link>
                 @else
                     <x-responsive-nav-link :href="route('candidate.dashboard')" :active="request()->routeIs('candidate.dashboard')">
                         Dashboard
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('candidate.jobs')" :active="request()->routeIs('candidate.jobs')">
                         Browse Jobs
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">
+                        Messages
                     </x-responsive-nav-link>
                 @endif
             @else

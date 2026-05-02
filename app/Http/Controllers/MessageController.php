@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
-    public function index(Request $request)
+public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -32,6 +32,7 @@ class MessageController extends Controller
 
         return view('messages.index', [
             'conversations' => $conversations,
+            'selectedConversation' => null,
         ]);
     }
 
@@ -53,8 +54,17 @@ class MessageController extends Controller
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
+        $conversations = Conversation::where(function ($q) use ($user) {
+            $q->where('employer_id', $user->id)
+                ->orWhere('candidate_id', $user->id);
+        })->with(['employer', 'candidate', 'job', 'latestMessage'])
+            ->orderBy('last_message_at', 'desc')
+            ->get();
+
         return view('messages.show', [
             'conversation' => $conversation,
+            'conversations' => $conversations,
+            'selectedConversation' => $conversation,
         ]);
     }
 

@@ -24,24 +24,11 @@
                 </header>
             @endisset
 
-            <main class="flex-1">
+<main class="flex-1">
                 @yield('content')
             </main>
 
-            <footer class="bg-white border-t border-slate-200 mt-auto">
-                <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div class="text-sm text-gray-500">
-                            &copy; {{ date('Y') }} Gridspace. All rights reserved.
-                        </div>
-                        <div class="flex gap-6 text-sm text-gray-500">
-                            <a href="#" class="hover:text-gray-900 transition-colors">Privacy Policy</a>
-                            <a href="#" class="hover:text-gray-900 transition-colors">Terms of Service</a>
-                            <a href="#" class="hover:text-gray-900 transition-colors">Contact</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            @stack('scripts')
         </div>
     </body>
 </html>

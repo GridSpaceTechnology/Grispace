@@ -63,7 +63,7 @@ class CandidateDashboardController extends Controller
             'job_id' => $job->id,
             'candidate_id' => $user->id,
             'status' => JobApplication::STATUS_APPLIED,
-            'match_score' => $matchScores['overall_match_percentage'],
+            'match_score' => $matchScores['total_score'] ?? 0,
             'applied_at' => now(),
         ]);
 

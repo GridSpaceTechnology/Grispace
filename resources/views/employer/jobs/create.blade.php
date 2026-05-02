@@ -8,7 +8,7 @@
             <p class="text-gray-600 mt-1">Fill in the details to attract top talent</p>
         </div>
 
-        <form method="POST" action="{{ route('employer.jobs.store') }}">
+        <form method="POST" action="{{ route('employer.jobs.store') }}" id="job-form">
             @csrf
 
             <div class="space-y-6">
@@ -61,10 +61,11 @@
                             <select name="employment_type" id="employment_type" required
                                     class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Select type</option>
-                                <option value="full-time">Full-time</option>
-                                <option value="part-time">Part-time</option>
+                                <option value="full_time">Full-time</option>
+                                <option value="part_time">Part-time</option>
                                 <option value="contract">Contract</option>
                                 <option value="freelance">Freelance</option>
+                                <option value="internship">Internship</option>
                             </select>
                             @error('employment_type')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -79,6 +80,7 @@
                                 <option value="remote">Remote</option>
                                 <option value="hybrid">Hybrid</option>
                                 <option value="onsite">On-site</option>
+                                <option value="flexible">Flexible</option>
                             </select>
                             @error('work_preference')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

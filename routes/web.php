@@ -34,7 +34,7 @@ Route::get('/dashboard', function () {
     }
 
     return redirect()->route('employer.dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -81,6 +81,11 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
     Route::get('/candidate/profile/{user}', [CandidateProfileController::class, 'show'])
         ->name('candidate.profile.show');
 
+    Route::get('/candidate/profile', [App\Http\Controllers\Candidate\CandidateProfileEditController::class, 'edit'])
+        ->name('candidate.profile.edit');
+    Route::patch('/candidate/profile', [App\Http\Controllers\Candidate\CandidateProfileEditController::class, 'update'])
+        ->name('candidate.profile.update');
+
     Route::get('/candidate/recommended-jobs', [CandidateRecommendationController::class, 'index'])
         ->name('candidate.recommended-jobs');
 
@@ -106,8 +111,12 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
     Route::post('/employer/setup', [App\Http\Controllers\Employer\EmployerSetupController::class, 'store']);
 
     Route::get('/employer/dashboard', [EmployerDashboardController::class, 'index'])
-        ->name('employer.dashboard')
-        ->middleware('verified');
+        ->name('employer.dashboard');
+
+    Route::get('/employer/profile', [App\Http\Controllers\Employer\EmployerProfileController::class, 'edit'])
+        ->name('employer.profile.edit');
+    Route::patch('/employer/profile', [App\Http\Controllers\Employer\EmployerProfileController::class, 'update'])
+        ->name('employer.profile.update');
 
     Route::get('/employer/jobs', [EmployerJobController::class, 'index'])
         ->name('employer.jobs.index');
@@ -178,14 +187,14 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
     Route::post('/employer/interviews/{interview}/complete', [EmployerInterviewController::class, 'complete'])
         ->name('employer.interviews.complete');
 
-    Route::get('/employer/messages', [MessageController::class, 'index'])
+        Route::get('/employer/messages', [MessageController::class, 'index'])
         ->name('employer.messages');
-
-    Route::get('/employer/messages/{conversation}', [MessageController::class, 'show'])
-        ->name('employer.messages.show');
 
     Route::post('/employer/messages/conversation/{candidate}', [MessageController::class, 'createOrGetConversation'])
         ->name('employer.messages.create');
+
+    Route::get('/employer/messages/{conversation}', [MessageController::class, 'show'])
+        ->name('employer.messages.show');
 
     Route::get('/employer/messages/{conversation}/messages', [MessageController::class, 'getMessages'])
         ->name('employer.messages.get');
@@ -197,7 +206,7 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
         ->name('employer.messages.read');
 });
 
-Route::middleware(['auth', 'verified', 'role:admin'])
+Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->group(function () {
         Route::get('/', fn () => redirect()->route('admin.dashboard'))->name('admin');
