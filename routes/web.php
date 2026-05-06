@@ -18,11 +18,19 @@ use App\Http\Controllers\EmployerMarketplaceController;
 use App\Http\Controllers\EmployerPipelineController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicJobController;
+use App\Http\Controllers\PublicMarketplaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('home');
 })->name('home');
+
+Route::get('/jobs', [PublicJobController::class, 'index'])->name('jobs.index');
+Route::get('/jobs/{job}', [PublicJobController::class, 'show'])->name('jobs.show');
+
+Route::get('/marketplace', [PublicMarketplaceController::class, 'index'])->name('marketplace.index');
+Route::get('/marketplace/candidates/{candidate}', [PublicMarketplaceController::class, 'showCandidate'])->name('marketplace.candidate');
 
 Route::get('/dashboard', function () {
     $user = auth()->user();

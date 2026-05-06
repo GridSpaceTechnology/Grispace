@@ -48,10 +48,10 @@
                         <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
                             Home
                         </x-nav-link>
-                        <x-nav-link :href="route('candidate.jobs')" :active="request()->routeIs('candidate.jobs')">
+                        <x-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
                             Browse Jobs
                         </x-nav-link>
-                        <x-nav-link :href="route('employer.marketplace.index')" :active="request()->routeIs('employer.marketplace.*')">
+                        <x-nav-link :href="route('marketplace.index')" :active="request()->routeIs('marketplace.*')">
                             Talent Marketplace
                         </x-nav-link>
                     </div>
@@ -172,10 +172,10 @@
                 <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')">
                     Home
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('candidate.jobs')" :active="request()->routeIs('candidate.jobs')">
+                <x-responsive-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
                     Browse Jobs
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('employer.marketplace.index')" :active="request()->routeIs('employer.marketplace.*')">
+                <x-responsive-nav-link :href="route('marketplace.index')" :active="request()->routeIs('marketplace.*')">
                     Talent Marketplace
                 </x-responsive-nav-link>
             @endauth

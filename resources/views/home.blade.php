@@ -14,7 +14,7 @@
                         Gridspace reveals skills, personality, and work temperament — helping employers hire the right people faster.
                     </p>
                     <div class="mt-10 flex flex-col sm:flex-row gap-4">
-                        <a href="{{ route('candidate.jobs') }}" class="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-brand-primary rounded-lg hover:bg-brand-primary-hover transition-colors">
+                        <a href="{{ route('jobs.index') }}" class="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-brand-primary rounded-lg hover:bg-brand-primary-hover transition-colors">
                             Find Jobs
                         </a>
                         <a href="{{ route('register') }}?role=employer" class="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-brand-primary bg-white border-2 border-brand-primary rounded-lg hover:bg-brand-primary/5 transition-colors">
@@ -75,7 +75,7 @@
                             @endphp
                             @foreach($categories as $category)
                                 <li>
-                                    <a href="{{ route('employer.marketplace.index') }}" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors text-sm">
+                                    <a href="{{ route('marketplace.index') }}" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors text-sm">
                                         {{ $category }}
                                     </a>
                                 </li>
@@ -131,7 +131,7 @@
                                     </div>
                                 </div>
                                 
-                                <a href="{{ route('employer.marketplace.index') }}" class="block w-full text-center text-xs border border-gray-300 text-slate-700 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+                                <a href="{{ route('marketplace.index') }}" class="block w-full text-center text-xs border border-gray-300 text-slate-700 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">
                                     View Profile
                                 </a>
                             </div>
@@ -139,7 +139,7 @@
                     </div>
 
                     <div class="mt-6 text-center">
-                        <a href="{{ route('employer.marketplace.index') }}" class="inline-flex items-center gap-2 text-brand-primary hover:text-indigo-700 font-medium transition-colors text-sm">
+                        <a href="{{ route('marketplace.index') }}" class="inline-flex items-center gap-2 text-brand-primary hover:text-indigo-700 font-medium transition-colors text-sm">
                             Explore all candidates
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
