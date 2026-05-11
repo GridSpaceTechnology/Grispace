@@ -22,35 +22,8 @@
                         </a>
                     </div>
                 </div>
-                <div class="hidden lg:block">
-                    <div class="relative">
-                        <div class="absolute inset-0 bg-gradient-to-br from-brand-primary/10 to-brand-secondary/10 rounded-2xl transform rotate-3"></div>
-                        <div class="relative bg-white rounded-2xl shadow-xl p-6 border border-slate-100">
-                            <div class="space-y-4">
-                                @php
-                                $candidates = [
-                                    ['name' => 'Sarah Chen', 'role' => 'Senior Full Stack Engineer', 'match' => '92%'],
-                                    ['name' => 'Marcus Thompson', 'role' => 'Product Design Lead', 'match' => '88%'],
-                                    ['name' => 'Elena Rodriguez', 'role' => 'Growth Marketing Manager', 'match' => '85%'],
-                                ];
-                                @endphp
-                                @foreach($candidates as $candidate)
-                                    <div class="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
-                                        <div class="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center">
-                                            <span class="text-brand-primary font-semibold text-sm">{{ substr($candidate['name'], 0, 2) }}</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <div class="font-medium text-slate-900 text-sm">{{ $candidate['name'] }}</div>
-                                            <div class="text-xs text-slate-500">{{ $candidate['role'] }}</div>
-                                        </div>
-                                        <div class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">
-                                            {{ $candidate['match'] }}
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
+                <div class="flex items-center justify-center">
+                    <img src="{{ asset('images/background-hero.png') }}" alt="Hero" class="w-full h-auto rounded-lg shadow-lg object-cover max-h-[500px]">
                 </div>
             </div>
         </div>
