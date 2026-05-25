@@ -13,8 +13,9 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased bg-slate-50">
-        <div class="min-h-screen flex flex-col">
+        <div class="min-h-screen flex flex-col pb-24 lg:pb-0">
             @include('layouts.navigation')
+            <x-mobile-bottom-nav />
 
             @isset($header)
                 <header class="bg-white shadow-sm border-b border-slate-200">
