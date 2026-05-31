@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -309,7 +310,7 @@ class CandidateOnboardingController extends Controller
         return true;
     }
 
-    protected function completeOnboarding($user): \Illuminate\Http\RedirectResponse
+    protected function completeOnboarding($user): RedirectResponse
     {
         if (! $this->canCompleteOnboarding($user)) {
             return redirect()->route('candidate.onboarding.step', ['step' => 1])

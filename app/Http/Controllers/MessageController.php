@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\EmployerShortlist;
+use App\Models\Interview;
 use App\Models\JobApplication;
 use App\Models\Message;
 use App\Models\User;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
-public function index(Request $request)
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -142,7 +143,7 @@ public function index(Request $request)
                 ->where('candidate_id', $candidate->id)
                 ->exists();
 
-            $hasInterview = \App\Models\Interview::where('employer_id', $user->id)
+            $hasInterview = Interview::where('employer_id', $user->id)
                 ->where('candidate_id', $candidate->id)
                 ->exists();
 

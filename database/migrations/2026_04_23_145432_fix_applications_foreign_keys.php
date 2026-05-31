@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::dropIfExists('applications');
-        
+
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('job_id')->constrained('job_listings')->cascadeOnDelete();
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->timestamp('hired_at')->nullable();
             $table->timestamp('rejected_at')->nullable();
             $table->timestamps();
-            
+
             $table->unique(['job_id', 'candidate_id']);
             $table->index(['candidate_id', 'status']);
             $table->index(['job_id', 'status']);

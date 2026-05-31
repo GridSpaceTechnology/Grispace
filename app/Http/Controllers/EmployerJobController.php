@@ -32,7 +32,7 @@ class EmployerJobController extends Controller
     public function store(Request $request)
     {
         Log::info('Auth check', ['id' => Auth::id(), 'user' => Auth::user()?->email]);
-        
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'role' => 'required|string|max:255',
@@ -56,20 +56,21 @@ class EmployerJobController extends Controller
             $job = Job::create([
                 ...$validated,
                 'employer_id' => Auth::id(),
-                'slug' => Str::slug($validated['title']) . '-' . Str::random(6),
+                'slug' => Str::slug($validated['title']).'-'.Str::random(6),
                 'status' => 'open',
                 'minimum_experience' => $validated['minimum_experience'] ?? 0,
                 'required_skills_json' => is_array($validated['required_skills'] ?? null) ? $validated['required_skills'] : [],
                 'personality_preferences_json' => is_array($validated['personality_preferences'] ?? null) ? $validated['personality_preferences'] : [],
             ]);
 
-            Log::info('Job created: ' . $job->id);
+            Log::info('Job created: '.$job->id);
 
-            return redirect()->to('/employer/jobs/' . $job->id)
+            return redirect()->to('/employer/jobs/'.$job->id)
                 ->with('success', 'Job posted successfully!');
         } catch (\Exception $e) {
-            Log::error('Job creation failed: ' . $e->getMessage());
-            return back()->with('error', 'Failed to create job: ' . $e->getMessage());
+            Log::error('Job creation failed: '.$e->getMessage());
+
+            return back()->with('error', 'Failed to create job: '.$e->getMessage());
         }
     }
 
@@ -119,7 +120,7 @@ class EmployerJobController extends Controller
 
         $job->update([
             'title' => $validated['title'],
-            'slug' => Str::slug($validated['title']) . '-' . Str::random(6),
+            'slug' => Str::slug($validated['title']).'-'.Str::random(6),
             'role' => $validated['role'],
             'location' => $validated['location'] ?? null,
             'location_country' => $validated['location_country'] ?? null,

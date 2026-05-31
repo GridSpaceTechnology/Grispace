@@ -6,10 +6,13 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminEmployerController;
 use App\Http\Controllers\Admin\AdminJobController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Candidate\CandidateProfileEditController;
 use App\Http\Controllers\CandidateDashboardController;
 use App\Http\Controllers\CandidateOnboardingController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CandidateRecommendationController;
+use App\Http\Controllers\Employer\EmployerProfileController;
+use App\Http\Controllers\Employer\EmployerSetupController;
 use App\Http\Controllers\EmployerDashboardController;
 use App\Http\Controllers\EmployerInterviewController;
 use App\Http\Controllers\EmployerJobCandidateController;
@@ -48,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.photo.destroy');
 
     Route::post('/welcome/dismiss', function () {
         auth()->user()->dismissWelcome();
@@ -89,9 +93,9 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
     Route::get('/candidate/profile/{user}', [CandidateProfileController::class, 'show'])
         ->name('candidate.profile.show');
 
-    Route::get('/candidate/profile', [App\Http\Controllers\Candidate\CandidateProfileEditController::class, 'edit'])
+    Route::get('/candidate/profile', [CandidateProfileEditController::class, 'edit'])
         ->name('candidate.profile.edit');
-    Route::patch('/candidate/profile', [App\Http\Controllers\Candidate\CandidateProfileEditController::class, 'update'])
+    Route::patch('/candidate/profile', [CandidateProfileEditController::class, 'update'])
         ->name('candidate.profile.update');
 
     Route::get('/candidate/recommended-jobs', [CandidateRecommendationController::class, 'index'])
@@ -102,6 +106,9 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
 
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])
         ->name('messages.show');
+
+    Route::post('/messages/{conversation}/send', [MessageController::class, 'sendMessage'])
+        ->name('messages.send');
 });
 
 Route::middleware(['auth', 'role:employer'])->group(function () {
@@ -114,16 +121,16 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
         return redirect()->route('employer.setup');
     })->name('employer.onboarding');
 
-    Route::get('/employer/setup', [App\Http\Controllers\Employer\EmployerSetupController::class, 'show'])
+    Route::get('/employer/setup', [EmployerSetupController::class, 'show'])
         ->name('employer.setup');
-    Route::post('/employer/setup', [App\Http\Controllers\Employer\EmployerSetupController::class, 'store']);
+    Route::post('/employer/setup', [EmployerSetupController::class, 'store']);
 
     Route::get('/employer/dashboard', [EmployerDashboardController::class, 'index'])
         ->name('employer.dashboard');
 
-    Route::get('/employer/profile', [App\Http\Controllers\Employer\EmployerProfileController::class, 'edit'])
+    Route::get('/employer/profile', [EmployerProfileController::class, 'edit'])
         ->name('employer.profile.edit');
-    Route::patch('/employer/profile', [App\Http\Controllers\Employer\EmployerProfileController::class, 'update'])
+    Route::patch('/employer/profile', [EmployerProfileController::class, 'update'])
         ->name('employer.profile.update');
 
     Route::get('/employer/jobs', [EmployerJobController::class, 'index'])
@@ -195,7 +202,7 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
     Route::post('/employer/interviews/{interview}/complete', [EmployerInterviewController::class, 'complete'])
         ->name('employer.interviews.complete');
 
-        Route::get('/employer/messages', [MessageController::class, 'index'])
+    Route::get('/employer/messages', [MessageController::class, 'index'])
         ->name('employer.messages');
 
     Route::post('/employer/messages/conversation/{candidate}', [MessageController::class, 'createOrGetConversation'])

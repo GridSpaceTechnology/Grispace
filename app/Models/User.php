@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -19,6 +20,7 @@ class User extends Authenticatable
         'role',
         'welcome_dismissed_at',
         'onboarding_completed',
+        'profile_photo_path',
     ];
 
     protected $hidden = [
@@ -130,6 +132,13 @@ class User extends Authenticatable
     public function scheduledInterviews(): HasMany
     {
         return $this->hasMany(Interview::class, 'employer_id');
+    }
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        return $this->profile_photo_path
+            ? Storage::disk('public')->url($this->profile_photo_path)
+            : null;
     }
 
     public function shouldShowWelcome(): bool

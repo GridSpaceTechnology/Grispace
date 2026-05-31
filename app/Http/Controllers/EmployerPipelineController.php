@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Job;
 use App\Models\JobApplication;
+use App\Notifications\ApplicationHired;
+use App\Notifications\ApplicationInterview;
+use App\Notifications\ApplicationOffer;
+use App\Notifications\ApplicationRejected;
+use App\Notifications\ApplicationShortlisted;
 use App\Services\MatchingEngine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -68,7 +73,7 @@ class EmployerPipelineController extends Controller
                 'rejected_at' => $now,
             ]);
 
-            $application->candidate->notify(new \App\Notifications\ApplicationRejected($application));
+            $application->candidate->notify(new ApplicationRejected($application));
 
             return redirect()->back()->with('success', 'Candidate has been rejected.');
         }
@@ -148,16 +153,16 @@ class EmployerPipelineController extends Controller
     {
         switch ($newStatus) {
             case JobApplication::STATUS_SHORTLISTED:
-                $application->candidate->notify(new \App\Notifications\ApplicationShortlisted($application));
+                $application->candidate->notify(new ApplicationShortlisted($application));
                 break;
             case JobApplication::STATUS_INTERVIEW:
-                $application->candidate->notify(new \App\Notifications\ApplicationInterview($application));
+                $application->candidate->notify(new ApplicationInterview($application));
                 break;
             case JobApplication::STATUS_OFFER:
-                $application->candidate->notify(new \App\Notifications\ApplicationOffer($application));
+                $application->candidate->notify(new ApplicationOffer($application));
                 break;
             case JobApplication::STATUS_HIRED:
-                $application->candidate->notify(new \App\Notifications\ApplicationHired($application));
+                $application->candidate->notify(new ApplicationHired($application));
                 break;
         }
     }

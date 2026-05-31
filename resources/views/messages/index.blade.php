@@ -73,7 +73,7 @@
             </div>
 
             <!-- Chat Area -->
-            <div class="hidden flex-1 flex flex-col {{ $selectedConversation ? 'flex' : 'hidden md:flex' }}">
+            <div class="flex-1 flex-col {{ $selectedConversation ? 'flex' : 'hidden' }} md:flex">
                 @yield('chat-content')
             </div>
         </div>

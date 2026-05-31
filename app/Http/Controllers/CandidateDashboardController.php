@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Job;
 use App\Models\JobApplication;
+use App\Models\User;
 use App\Services\MatchingEngine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,7 @@ class CandidateDashboardController extends Controller
 
     public function index(Request $request)
     {
-        $user = \App\Models\User::where('id', Auth::id())->first();
+        $user = User::where('id', Auth::id())->first();
 
         if (! $user->onboarding_completed) {
             return redirect()->route('candidate.onboarding.step', ['step' => 1]);

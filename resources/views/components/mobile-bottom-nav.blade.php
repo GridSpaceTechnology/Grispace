@@ -13,22 +13,22 @@
             'active' => request()->is('jobs') || request()->is('jobs/*'),
         ],
         [
-            'label' => 'Learn',
-            'icon' => 'graduation-cap',
-            'url' => '/learn',
-            'active' => request()->is('learn') || request()->is('learn/*'),
-        ],
-        [
-            'label' => 'Articles',
-            'icon' => 'newspaper',
-            'url' => '/articles',
-            'active' => request()->is('articles') || request()->is('articles/*'),
+            'label' => 'Marketplace',
+            'icon' => 'store',
+            'url' => route('marketplace.index'),
+            'active' => request()->routeIs('marketplace*'),
         ],
         [
             'label' => 'Messages',
             'icon' => 'message-circle',
             'url' => '/messages',
             'active' => request()->is('messages') || request()->is('messages/*'),
+        ],
+        [
+            'label' => 'Profile',
+            'icon' => 'user',
+            'url' => route('profile.edit'),
+            'active' => request()->routeIs('profile*'),
         ],
     ];
 @endphp
@@ -63,18 +63,16 @@
                                 <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
                                 <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
                             </svg>
-                        @elseif ($item['icon'] === 'graduation-cap')
+                        @elseif ($item['icon'] === 'store')
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ $item['active'] ? 'text-[#EB5233]' : 'text-gray-400 dark:text-gray-500' }} transition-colors duration-200">
-                                <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
-                                <path d="M22 10v6"/>
-                                <path d="M6 12.5v5c3 3 8.4 3 12 0v-5"/>
+                                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                                <path d="M3 6h18"/>
+                                <path d="M16 10a4 4 0 0 1-8 0"/>
                             </svg>
-                        @elseif ($item['icon'] === 'newspaper')
+                        @elseif ($item['icon'] === 'user')
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ $item['active'] ? 'text-[#EB5233]' : 'text-gray-400 dark:text-gray-500' }} transition-colors duration-200">
-                                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9h2"/>
-                                <path d="M18 14h-8"/>
-                                <path d="M15 18h-5"/>
-                                <path d="M10 6h8v4h-8V6Z"/>
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
                             </svg>
                         @elseif ($item['icon'] === 'message-circle')
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ $item['active'] ? 'text-[#EB5233]' : 'text-gray-400 dark:text-gray-500' }} transition-colors duration-200">
