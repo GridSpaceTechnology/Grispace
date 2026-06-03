@@ -83,6 +83,49 @@ class JobApplication extends Model
         return $this->hasMany(MatchProfile::class);
     }
 
+    public function stageHistories(): HasMany
+    {
+        return $this->hasMany(ApplicationStageHistory::class, 'application_id');
+    }
+
+    public function notes(): HasMany
+    {
+        return $this->hasMany(ApplicationNote::class, 'application_id');
+    }
+
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(CandidateRating::class, 'application_id');
+    }
+
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(Interview::class, 'job_application_id');
+    }
+
+    public function scopeForEmployer($query, int $employerId)
+    {
+        return $query->whereHas('job', fn ($q) => $q->where('employer_id', $employerId));
+    }
+
+    public function scopeByStatus($query, string $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    public function scopeSearch($query, string $term)
+    {
+        return $query->whereHas('candidate', fn ($q) => $q
+            ->where('name', 'like', "%{$term}%")
+            ->orWhere('email', 'like', "%{$term}%")
+        );
+    }
+
+    public function scopeWithMinScore($query, int $score)
+    {
+        return $query->where('match_score', '>=', $score);
+    }
+
     public function isPending(): bool
     {
         return in_array($this->status, [self::STATUS_APPLIED, self::STATUS_VIEWED]);

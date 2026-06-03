@@ -28,10 +28,15 @@ class MessageSent implements ShouldBroadcast
             'id' => $this->message->id,
             'conversation_id' => $this->message->conversation_id,
             'sender_id' => $this->message->sender_id,
-            'sender_name' => $this->message->sender->name,
+            'sender_name' => $this->message->sender?->name,
+            'sender_type' => $this->message->sender_type,
             'message' => $this->message->message,
             'is_read' => $this->message->is_read,
-            'created_at' => $this->message->created_at->toIso8601String(),
+            'has_attachment' => ! is_null($this->message->attachment_path),
+            'attachment_url' => $this->message->attachment_url,
+            'attachment_name' => $this->message->attachment_name,
+            'attachment_type' => $this->message->attachment_type,
+            'created_at' => $this->message->created_at?->toIso8601String(),
         ];
     }
 }

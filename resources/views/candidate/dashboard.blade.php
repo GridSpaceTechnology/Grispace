@@ -24,6 +24,32 @@
             </div>
         @endif
 
+        @if($personalityProfile && !$personalityProfile->assessment_completed)
+            <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-orange-800">Complete your personality assessment</p>
+                        <p class="text-sm text-orange-600">Employers discover complete profiles faster. Get better job matches.</p>
+                    </div>
+                    <a href="{{ route('candidate.personality.start') }}" class="px-4 py-2 text-sm font-medium text-white rounded-lg hover:opacity-90 transition-colors" style="background-color: #EB5233;">
+                        Take Assessment
+                    </a>
+                </div>
+            </div>
+        @elseif(!$personalityProfile)
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-blue-800">Discover your work personality</p>
+                        <p class="text-sm text-blue-600">Take our quick assessment to unlock personalized job matches.</p>
+                    </div>
+                    <a href="{{ route('candidate.personality.start') }}" class="px-4 py-2 text-sm font-medium text-white rounded-lg" style="background-color: #EB5233;">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                 <div class="flex items-center justify-between mb-4">
@@ -119,6 +145,46 @@
                 </div>
             </div>
 
+            @if($recommendedJobs->isNotEmpty())
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+                    <div class="px-6 py-4 border-b border-slate-100">
+                        <h2 class="text-lg font-semibold text-slate-900">Recommended for You</h2>
+                        <p class="text-xs text-slate-500">Based on your personality & skills profile</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            @foreach($recommendedJobs as $match)
+                                @php $job = $match['job'] ?? null; @endphp
+                                @if($job)
+                                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h3 class="font-medium text-gray-900">{{ $job->title }}</h3>
+                                                <p class="text-sm text-gray-500">{{ $job->company?->name ?? 'Company' }}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-lg font-bold" style="color: #EB5233;">{{ $match['overall_match_score'] ?? 0 }}%</div>
+                                                <div class="text-xs text-gray-500">personality match</div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 flex gap-2 text-xs text-gray-500">
+                                            <span class="text-green-600">Skills {{ $match['skills_fit_score'] ?? 0 }}%</span>
+                                            <span class="text-blue-600">Personality {{ $match['personality_fit_score'] ?? 0 }}%</span>
+                                            <span class="text-purple-600">Culture {{ $match['culture_fit_score'] ?? 0 }}%</span>
+                                        </div>
+                                        <div class="mt-3">
+                                            <a href="{{ route('jobs.show', $job) }}" class="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                                View Job
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="bg-white rounded-xl shadow-sm border border-gray-200">
                 <div class="px-6 py-4 border-b border-gray-100">
                     <h2 class="text-lg font-semibold text-gray-900">Your Applications</h2>
@@ -148,7 +214,7 @@
                                         </span>
                                     </div>
                                     <div class="mt-2 text-sm text-gray-500">
-                                        Match Score: {{ $application->match_score_snapshot }}%
+                                        Match Score: {{ $application->match_score_snapshot ?? $application->match_score }}%
                                     </div>
                                 </div>
                             @endforeach

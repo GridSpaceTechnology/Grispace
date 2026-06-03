@@ -18,7 +18,9 @@ class MatchingEngine
 
     public const WEIGHT_PERSONALITY = 0.10;
 
-    public const WEIGHT_TEMPERAMENT = 0.10;
+    public const WEIGHT_TEMPERAMENT = 0.09;
+
+    public const WEIGHT_TRUST = 0.10;
 
     public function calculateMatch(User $candidate, Job $job): array
     {
@@ -28,6 +30,7 @@ class MatchingEngine
         $salaryScore = $this->calculateSalaryMatch($candidate, $job);
         $personalityScore = $this->calculatePersonalityMatch($candidate, $job);
         $temperamentScore = $this->calculateTemperamentMatch($candidate, $job);
+        $trustScore = $this->calculateTrustMatch($candidate);
 
         $totalScore = (int) round(
             ($skillScore * self::WEIGHT_SKILL) +
@@ -35,7 +38,8 @@ class MatchingEngine
             ($locationScore * self::WEIGHT_LOCATION) +
             ($salaryScore * self::WEIGHT_SALARY) +
             ($personalityScore * self::WEIGHT_PERSONALITY) +
-            ($temperamentScore * self::WEIGHT_TEMPERAMENT)
+            ($temperamentScore * self::WEIGHT_TEMPERAMENT) +
+            ($trustScore * self::WEIGHT_TRUST)
         );
 
         return [
@@ -47,8 +51,16 @@ class MatchingEngine
                 'salary' => $salaryScore,
                 'personality' => $personalityScore,
                 'temperament' => $temperamentScore,
+                'trust' => $trustScore,
             ],
         ];
+    }
+
+    public function calculateTrustMatch(User $candidate): int
+    {
+        $trustScore = $candidate->trustScore;
+
+        return $trustScore ? $trustScore->score : 0;
     }
 
     public function calculateSkillMatch(User $candidate, Job $job): int
@@ -251,7 +263,7 @@ class MatchingEngine
     {
         $candidates = User::where('role', 'candidate')
             ->where('onboarding_completed', true)
-            ->with(['candidateProfile', 'candidateSkills', 'candidateAssessment'])
+            ->with(['candidateProfile', 'candidateSkills', 'candidateAssessment', 'trustScore'])
             ->get();
 
         $candidatesWithScores = $candidates->map(function ($candidate) use ($job) {
@@ -266,6 +278,7 @@ class MatchingEngine
                 'salary_score' => $scores['breakdown']['salary'],
                 'personality_score' => $scores['breakdown']['personality'],
                 'temperament_score' => $scores['breakdown']['temperament'],
+                'trust_score' => $scores['breakdown']['trust'],
             ];
         });
 

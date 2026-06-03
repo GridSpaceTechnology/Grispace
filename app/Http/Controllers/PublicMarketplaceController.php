@@ -11,7 +11,7 @@ class PublicMarketplaceController extends Controller
     {
         $query = User::where('role', 'candidate')
             ->where('onboarding_completed', true)
-            ->with('candidateProfile');
+            ->with(['candidateProfile', 'trustScore', 'candidateVerifications' => fn ($q) => $q->with('verificationType')]);
 
         if ($request->has('search') && $request->search) {
             $search = $request->search;
@@ -66,6 +66,8 @@ class PublicMarketplaceController extends Controller
             'candidateEducation',
             'candidateAssessment',
             'candidateMedia',
+            'trustScore',
+            'candidateVerifications' => fn ($q) => $q->with('verificationType'),
         ]);
 
         $aiInsights = null;
@@ -80,9 +82,16 @@ class PublicMarketplaceController extends Controller
             ];
         }
 
+        $approvedVerifications = $candidate->candidateVerifications
+            ->where('status', 'approved')
+            ->pluck('verificationType.slug')
+            ->toArray();
+
         return view('marketplace.candidate', [
             'candidate' => $candidate,
             'aiInsights' => $aiInsights,
+            'approvedVerifications' => $approvedVerifications,
+            'trustScore' => $candidate->trustScore,
         ]);
     }
 }

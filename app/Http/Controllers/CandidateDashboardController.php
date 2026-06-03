@@ -6,6 +6,7 @@ use App\Models\Job;
 use App\Models\JobApplication;
 use App\Models\User;
 use App\Services\MatchingEngine;
+use App\Services\MatchingEngineService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,9 +14,12 @@ class CandidateDashboardController extends Controller
 {
     protected MatchingEngine $matchingEngine;
 
-    public function __construct(MatchingEngine $matchingEngine)
+    protected MatchingEngineService $matchingEngineService;
+
+    public function __construct(MatchingEngine $matchingEngine, MatchingEngineService $matchingEngineService)
     {
         $this->matchingEngine = $matchingEngine;
+        $this->matchingEngineService = $matchingEngineService;
     }
 
     public function index(Request $request)
@@ -27,6 +31,7 @@ class CandidateDashboardController extends Controller
         }
 
         $profile = $user->candidateProfile;
+        $personalityProfile = $user->personalityProfile;
         $applications = $user->jobApplications()
             ->with('job')
             ->orderBy('created_at', 'desc')
@@ -34,10 +39,16 @@ class CandidateDashboardController extends Controller
 
         $matchingJobs = $this->matchingEngine->getTopMatchingJobs($user, 10);
 
+        $recommendedJobs = $personalityProfile?->assessment_completed
+            ? $this->matchingEngineService->getTopMatchingJobs($user, 5)
+            : collect();
+
         return view('candidate.dashboard', [
             'profile' => $profile,
+            'personalityProfile' => $personalityProfile,
             'applications' => $applications,
             'matchingJobs' => $matchingJobs,
+            'recommendedJobs' => $recommendedJobs,
         ]);
     }
 
@@ -60,13 +71,17 @@ class CandidateDashboardController extends Controller
 
         $matchScores = $this->matchingEngine->calculateMatch($user, $job);
 
-        JobApplication::create([
+        $application = JobApplication::create([
             'job_id' => $job->id,
             'candidate_id' => $user->id,
             'status' => JobApplication::STATUS_APPLIED,
             'match_score' => $matchScores['total_score'] ?? 0,
             'applied_at' => now(),
         ]);
+
+        if (auth()->user()->personalityProfile?->assessment_completed) {
+            $this->matchingEngineService->saveMatch($user, $job);
+        }
 
         return back()->with('success', 'Application submitted successfully!');
     }

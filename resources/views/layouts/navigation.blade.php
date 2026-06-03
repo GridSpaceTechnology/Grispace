@@ -25,6 +25,9 @@
                             <x-nav-link :href="route('employer.jobs.index')" :active="request()->routeIs('employer.jobs.*')">
                                 My Jobs
                             </x-nav-link>
+                            <x-nav-link :href="route('employer.ats.dashboard')" :active="request()->routeIs('employer.ats.*')">
+                                ATS
+                            </x-nav-link>
                             <x-nav-link :href="route('employer.marketplace.index')" :active="request()->routeIs('employer.marketplace.*')">
                                 Talent Marketplace
                             </x-nav-link>
@@ -40,6 +43,9 @@
                             </x-nav-link>
                             <x-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">
                                 Messages
+                            </x-nav-link>
+                            <x-nav-link :href="route('candidate.personality.start')" :active="request()->routeIs('candidate.personality.*')">
+                                Assessment
                             </x-nav-link>
                         @endif
                     </div>
@@ -151,6 +157,9 @@
                     <x-responsive-nav-link :href="route('employer.jobs.index')" :active="request()->routeIs('employer.jobs.*')">
                         My Jobs
                     </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('employer.ats.dashboard')" :active="request()->routeIs('employer.ats.*')">
+                        ATS
+                    </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('employer.marketplace.index')" :active="request()->routeIs('employer.marketplace.*')">
                         Talent Marketplace
                     </x-responsive-nav-link>
@@ -166,6 +175,9 @@
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">
                         Messages
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('candidate.personality.start')" :active="request()->routeIs('candidate.personality.*')">
+                        Assessment
                     </x-responsive-nav-link>
                 @endif
             @else

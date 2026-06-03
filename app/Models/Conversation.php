@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -60,5 +61,21 @@ class Conversation extends Model
         return $this->candidate_id === $currentUser->id
             ? $this->employer
             : $this->candidate;
+    }
+
+    public function scopeForUser(Builder $query, User $user): Builder
+    {
+        return $query->where(function (Builder $q) use ($user) {
+            $q->where('employer_id', $user->id)
+                ->orWhere('candidate_id', $user->id);
+        });
+    }
+
+    public function scopeSearch(Builder $query, string $term): Builder
+    {
+        return $query->whereHas('employer', fn (Builder $q) => $q->where('name', 'like', "%{$term}%"))
+            ->orWhereHas('candidate', fn (Builder $q) => $q->where('name', 'like', "%{$term}%"))
+            ->orWhereHas('job', fn (Builder $q) => $q->where('title', 'like', "%{$term}%"))
+            ->orWhereHas('messages', fn (Builder $q) => $q->where('message', 'like', "%{$term}%"));
     }
 }

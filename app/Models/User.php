@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
@@ -134,6 +135,21 @@ class User extends Authenticatable
         return $this->hasMany(Interview::class, 'employer_id');
     }
 
+    public function personalityAnswers(): HasMany
+    {
+        return $this->hasMany(PersonalityAnswer::class, 'candidate_id');
+    }
+
+    public function personalityProfile(): HasOne
+    {
+        return $this->hasOne(CandidatePersonalityProfile::class, 'candidate_id');
+    }
+
+    public function jobMatchScores(): HasMany
+    {
+        return $this->hasMany(JobMatchScore::class, 'candidate_id');
+    }
+
     public function getProfilePhotoUrlAttribute(): ?string
     {
         return $this->profile_photo_path
@@ -149,5 +165,97 @@ class User extends Authenticatable
     public function dismissWelcome(): void
     {
         $this->update(['welcome_dismissed_at' => now()]);
+    }
+
+    public function conversationsAsEmployer(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'employer_id');
+    }
+
+    public function conversationsAsCandidate(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'candidate_id');
+    }
+
+    public function sentMessages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function messageReads(): HasMany
+    {
+        return $this->hasMany(MessageRead::class);
+    }
+
+    public function isOnline(): bool
+    {
+        return Cache::has("user-online-{$this->id}");
+    }
+
+    public function lastSeen(): ?string
+    {
+        return Cache::get("user-last-seen-{$this->id}");
+    }
+
+    public function candidateVerifications(): HasMany
+    {
+        return $this->hasMany(CandidateVerification::class, 'candidate_id');
+    }
+
+    public function trustScore(): HasOne
+    {
+        return $this->hasOne(TrustScore::class, 'candidate_id');
+    }
+
+    public function verifiedPhones(): HasMany
+    {
+        return $this->hasMany(CandidateVerification::class, 'candidate_id')
+            ->whereHas('verificationType', fn ($q) => $q->where('slug', 'phone'))
+            ->where('status', 'approved');
+    }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return ! is_null($this->email_verified_at);
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return ! is_null($this->phone_verified_at);
+    }
+
+    public function hasVerifiedIdentity(): bool
+    {
+        return $this->candidateVerifications()
+            ->whereHas('verificationType', fn ($q) => $q->where('slug', 'identity'))
+            ->approved()->exists();
+    }
+
+    public function hasVerifiedEducation(): bool
+    {
+        return $this->candidateVerifications()
+            ->whereHas('verificationType', fn ($q) => $q->where('slug', 'education'))
+            ->approved()->exists();
+    }
+
+    public function hasVerifiedEmployment(): bool
+    {
+        return $this->candidateVerifications()
+            ->whereHas('verificationType', fn ($q) => $q->where('slug', 'employment'))
+            ->approved()->exists();
+    }
+
+    public function hasVerifiedCertification(): bool
+    {
+        return $this->candidateVerifications()
+            ->whereHas('verificationType', fn ($q) => $q->where('slug', 'certification'))
+            ->approved()->exists();
+    }
+
+    public function unreadMessageCount(): int
+    {
+        return Conversation::forUser($this)
+            ->get()
+            ->sum(fn (Conversation $c) => $c->unreadMessagesCount($this));
     }
 }

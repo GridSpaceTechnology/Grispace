@@ -5,21 +5,33 @@ use App\Http\Controllers\Admin\AdminCandidateController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminEmployerController;
 use App\Http\Controllers\Admin\AdminJobController;
+use App\Http\Controllers\Admin\AdminMessageController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminVerificationController;
+use App\Http\Controllers\Admin\PersonalityAnalyticsController;
+use App\Http\Controllers\Admin\PersonalityProfileController;
+use App\Http\Controllers\Admin\PersonalityQuestionController;
 use App\Http\Controllers\Candidate\CandidateProfileEditController;
+use App\Http\Controllers\Candidate\CandidateVerificationController;
 use App\Http\Controllers\CandidateDashboardController;
 use App\Http\Controllers\CandidateOnboardingController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CandidateRecommendationController;
+use App\Http\Controllers\Employer\ATS\ApplicationNoteController;
+use App\Http\Controllers\Employer\ATS\ATSController;
+use App\Http\Controllers\Employer\ATS\CandidateRatingController;
 use App\Http\Controllers\Employer\EmployerProfileController;
 use App\Http\Controllers\Employer\EmployerSetupController;
+use App\Http\Controllers\EmployerCultureController;
 use App\Http\Controllers\EmployerDashboardController;
 use App\Http\Controllers\EmployerInterviewController;
 use App\Http\Controllers\EmployerJobCandidateController;
 use App\Http\Controllers\EmployerJobController;
 use App\Http\Controllers\EmployerMarketplaceController;
 use App\Http\Controllers\EmployerPipelineController;
+use App\Http\Controllers\InterviewMessageController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\PersonalityAssessmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicJobController;
 use App\Http\Controllers\PublicMarketplaceController;
@@ -101,6 +113,33 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
     Route::get('/candidate/recommended-jobs', [CandidateRecommendationController::class, 'index'])
         ->name('candidate.recommended-jobs');
 
+    Route::get('/candidate/personality-assessment', [PersonalityAssessmentController::class, 'start'])
+        ->name('candidate.personality.start');
+
+    Route::get('/candidate/personality-assessment/{question}', [PersonalityAssessmentController::class, 'showQuestion'])
+        ->name('candidate.personality.question');
+
+    Route::post('/candidate/personality-assessment/{question}/answer', [PersonalityAssessmentController::class, 'answer'])
+        ->name('candidate.personality.answer');
+
+    Route::get('/candidate/personality-assessment/complete', [PersonalityAssessmentController::class, 'complete'])
+        ->name('candidate.personality.complete');
+
+    Route::post('/candidate/personality-assessment/skip', [PersonalityAssessmentController::class, 'skip'])
+        ->name('candidate.personality.skip');
+
+    Route::get('/candidate/verification', [CandidateVerificationController::class, 'index'])
+        ->name('candidate.verification');
+
+    Route::post('/candidate/verification/{verification_type}/submit', [CandidateVerificationController::class, 'submit'])
+        ->name('candidate.verification.submit');
+
+    Route::post('/candidate/verification/phone', [CandidateVerificationController::class, 'verifyPhone'])
+        ->name('candidate.verification.phone');
+
+    Route::post('/candidate/verification/phone/otp', [CandidateVerificationController::class, 'verifyPhoneOtp'])
+        ->name('candidate.verification.phone.otp');
+
     Route::get('/messages', [MessageController::class, 'index'])
         ->name('messages.index');
 
@@ -109,6 +148,15 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
 
     Route::post('/messages/{conversation}/send', [MessageController::class, 'sendMessage'])
         ->name('messages.send');
+
+    Route::post('/messages/{conversation}/typing', [MessageController::class, 'typing'])
+        ->name('messages.typing');
+
+    Route::get('/messages/search', [MessageController::class, 'search'])
+        ->name('messages.search');
+
+    Route::post('/messages/interview/{interview}/respond', [InterviewMessageController::class, 'respondToInvitation'])
+        ->name('messages.interview.respond');
 });
 
 Route::middleware(['auth', 'role:employer'])->group(function () {
@@ -219,6 +267,42 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
 
     Route::post('/employer/messages/{conversation}/read', [MessageController::class, 'markAsRead'])
         ->name('employer.messages.read');
+
+    Route::post('/employer/messages/{conversation}/typing', [MessageController::class, 'typing'])
+        ->name('employer.messages.typing');
+
+    Route::get('/employer/messages/search', [MessageController::class, 'search'])
+        ->name('employer.messages.search');
+
+    Route::post('/employer/messages/{conversation}/interview', [InterviewMessageController::class, 'sendInvitation'])
+        ->name('employer.messages.interview.send');
+
+    Route::post('/employer/messages/{conversation}/decision', [InterviewMessageController::class, 'sendDecision'])
+        ->name('employer.messages.decision.send');
+
+    Route::get('/employer/ats', [ATSController::class, 'dashboard'])
+        ->name('employer.ats.dashboard');
+
+    Route::get('/employer/ats/applications/{application}', [ATSController::class, 'show'])
+        ->name('employer.ats.show');
+
+    Route::get('/employer/ats/analytics', [ATSController::class, 'analytics'])
+        ->name('employer.ats.analytics');
+
+    Route::post('/employer/ats/applications/{application}/notes', [ApplicationNoteController::class, 'store'])
+        ->name('employer.ats.notes.store');
+
+    Route::delete('/employer/ats/notes/{note}', [ApplicationNoteController::class, 'destroy'])
+        ->name('employer.ats.notes.destroy');
+
+    Route::post('/employer/ats/applications/{application}/ratings', [CandidateRatingController::class, 'store'])
+        ->name('employer.ats.ratings.store');
+
+    Route::get('/employer/culture-assessment', [EmployerCultureController::class, 'show'])
+        ->name('employer.culture.assessment');
+
+    Route::post('/employer/culture-assessment', [EmployerCultureController::class, 'store'])
+        ->name('employer.culture.store');
 });
 
 Route::middleware(['auth', 'role:admin'])
@@ -238,4 +322,52 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/jobs', [AdminJobController::class, 'index'])->name('admin.jobs');
 
         Route::get('/analytics', [AdminAnalyticsController::class, 'index'])->name('admin.analytics');
+
+        Route::get('/verifications', [AdminVerificationController::class, 'index'])->name('admin.verifications.index');
+        Route::get('/verifications/pending', [AdminVerificationController::class, 'pending'])->name('admin.verifications.pending');
+        Route::get('/verifications/{verification}', [AdminVerificationController::class, 'show'])->name('admin.verifications.show');
+        Route::post('/verifications/{verification}/approve', [AdminVerificationController::class, 'approve'])->name('admin.verifications.approve');
+        Route::post('/verifications/{verification}/reject', [AdminVerificationController::class, 'reject'])->name('admin.verifications.reject');
+        Route::post('/verifications/{verification}/request-info', [AdminVerificationController::class, 'requestInfo'])->name('admin.verifications.request-info');
+        Route::get('/verifications/stats/overview', [AdminVerificationController::class, 'stats'])->name('admin.verifications.stats');
+
+        Route::get('/messages', [AdminMessageController::class, 'index'])->name('admin.messages.index');
+        Route::get('/messages/{conversation}', [AdminMessageController::class, 'show'])->name('admin.messages.show');
+        Route::get('/messages/stats/overview', [AdminMessageController::class, 'stats'])->name('admin.messages.stats');
+        Route::delete('/messages/{conversation}', [AdminMessageController::class, 'destroy'])->name('admin.messages.destroy');
+
+        Route::prefix('personality')->group(function () {
+            Route::get('/questions', [PersonalityQuestionController::class, 'index'])
+                ->name('admin.personality.questions.index');
+
+            Route::get('/questions/create', [PersonalityQuestionController::class, 'create'])
+                ->name('admin.personality.questions.create');
+
+            Route::post('/questions', [PersonalityQuestionController::class, 'store'])
+                ->name('admin.personality.questions.store');
+
+            Route::get('/questions/{question}/edit', [PersonalityQuestionController::class, 'edit'])
+                ->name('admin.personality.questions.edit');
+
+            Route::patch('/questions/{question}', [PersonalityQuestionController::class, 'update'])
+                ->name('admin.personality.questions.update');
+
+            Route::delete('/questions/{question}', [PersonalityQuestionController::class, 'destroy'])
+                ->name('admin.personality.questions.destroy');
+
+            Route::post('/questions/{question}/toggle-status', [PersonalityQuestionController::class, 'toggleStatus'])
+                ->name('admin.personality.questions.toggle');
+
+            Route::post('/questions/reorder', [PersonalityQuestionController::class, 'reorder'])
+                ->name('admin.personality.questions.reorder');
+
+            Route::get('/analytics', [PersonalityAnalyticsController::class, 'index'])
+                ->name('admin.personality.analytics');
+
+            Route::get('/profiles', [PersonalityProfileController::class, 'index'])
+                ->name('admin.personality.profiles.candidates');
+
+            Route::get('/profiles/employers', [PersonalityProfileController::class, 'employerProfiles'])
+                ->name('admin.personality.profiles.employers');
+        });
     });

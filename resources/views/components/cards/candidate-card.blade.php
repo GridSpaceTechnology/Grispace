@@ -9,6 +9,8 @@
     'location' => null,
     'experience' => null,
     'workPreference' => null,
+    'trustScore' => null,
+    'verificationBadges' => [],
 ])
 
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-shadow duration-200">
@@ -36,6 +38,37 @@
         @endif
     </div>
     
+    @if(count($verificationBadges) > 0)
+        <div class="flex flex-wrap gap-1 mb-2">
+            @foreach($verificationBadges as $badgeType)
+                <x-verification-badge :type="$badgeType" status="verified" size="xs"/>
+            @endforeach
+        </div>
+    @endif
+
+    @if($trustScore)
+        <div class="mb-2 flex items-center gap-2">
+            <div class="flex-1 bg-gray-200 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full
+                    @if($trustScore >= 76) bg-green-500
+                    @elseif($trustScore >= 51) bg-blue-500
+                    @elseif($trustScore >= 26) bg-amber-500
+                    @else bg-gray-400
+                    @endif"
+                    style="width: {{ $trustScore }}%">
+                </div>
+            </div>
+            <span class="text-xs font-medium
+                @if($trustScore >= 76) text-green-600
+                @elseif($trustScore >= 51) text-blue-600
+                @elseif($trustScore >= 26) text-amber-600
+                @else text-gray-500
+                @endif">
+                {{ $trustScore }}/100
+            </span>
+        </div>
+    @endif
+
     @if(count($skills) > 0)
         <div class="mb-3">
             <div class="flex flex-wrap gap-1">

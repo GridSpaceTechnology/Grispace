@@ -73,6 +73,13 @@ class EmployerPipelineController extends Controller
                 'rejected_at' => $now,
             ]);
 
+            $application->stageHistories()->create([
+                'from_status' => $currentStatus,
+                'to_status' => JobApplication::STATUS_REJECTED,
+                'employer_id' => $user->id,
+                'notes' => $request->input('reason'),
+            ]);
+
             $application->candidate->notify(new ApplicationRejected($application));
 
             return redirect()->back()->with('success', 'Candidate has been rejected.');
@@ -104,6 +111,12 @@ class EmployerPipelineController extends Controller
 
             $application->update($updateData);
 
+            $application->stageHistories()->create([
+                'from_status' => $currentStatus,
+                'to_status' => $nextStatus,
+                'employer_id' => $user->id,
+            ]);
+
             $this->sendStageNotification($application, $nextStatus);
 
             return redirect()->back()->with('success', 'Candidate moved to next stage.');
@@ -117,6 +130,12 @@ class EmployerPipelineController extends Controller
             }
 
             $application->update(['status' => $prevStatus]);
+
+            $application->stageHistories()->create([
+                'from_status' => $currentStatus,
+                'to_status' => $prevStatus,
+                'employer_id' => $user->id,
+            ]);
 
             return redirect()->back()->with('success', 'Candidate moved to previous stage.');
         }

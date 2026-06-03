@@ -189,6 +189,33 @@
             </div>
 
             <div class="space-y-6">
+                @if(isset($trustScore) && $trustScore)
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Trust Score</h2>
+                        <x-trust-score :score="$trustScore->score" :size="'md'" />
+                        <div class="mt-3 text-center">
+                            <span class="text-xs text-gray-500">
+                                @if($trustScore->score >= 76) Verified Professional
+                                @elseif($trustScore->score >= 51) Highly Trusted
+                                @elseif($trustScore->score >= 26) Trusted
+                                @else Beginner
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                @endif
+
+                @if(isset($approvedVerifications) && count($approvedVerifications) > 0)
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Verifications</h2>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($approvedVerifications as $slug)
+                                <x-verification-badge :type="$slug" status="verified"/>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
                     

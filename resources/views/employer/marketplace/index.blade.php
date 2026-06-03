@@ -114,6 +114,38 @@
                                    placeholder="e.g. 100000">
                         </div>
 
+                        <div class="border-t border-slate-200 pt-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Trust & Verification</p>
+
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-2">
+                                    <input type="checkbox" name="verified_identity" value="1" {{ request('verified_identity') ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-brand-primary focus:ring-brand-primary">
+                                    <span class="text-sm text-slate-700">Identity Verified</span>
+                                </label>
+                                <label class="flex items-center gap-2">
+                                    <input type="checkbox" name="verified_education" value="1" {{ request('verified_education') ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-brand-primary focus:ring-brand-primary">
+                                    <span class="text-sm text-slate-700">Education Verified</span>
+                                </label>
+                                <label class="flex items-center gap-2">
+                                    <input type="checkbox" name="verified_employment" value="1" {{ request('verified_employment') ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-brand-primary focus:ring-brand-primary">
+                                    <span class="text-sm text-slate-700">Employment Verified</span>
+                                </label>
+                                <div>
+                                    <label for="trust_score_min" class="block text-sm font-medium text-slate-700 mb-1">Min Trust Score</label>
+                                    <select name="trust_score_min" id="trust_score_min"
+                                            class="w-full rounded-lg border-slate-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary">
+                                        <option value="">Any</option>
+                                        <option value="26" {{ request('trust_score_min') == '26' ? 'selected' : '' }}>Trusted (26+)</option>
+                                        <option value="51" {{ request('trust_score_min') == '51' ? 'selected' : '' }}>Highly Trusted (51+)</option>
+                                        <option value="76" {{ request('trust_score_min') == '76' ? 'selected' : '' }}>Verified Professional (76+)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <div>
                             <label for="experience_level" class="block text-sm font-medium text-slate-700 mb-1">Experience Level</label>
                             <select name="experience_level" id="experience_level"
@@ -161,6 +193,11 @@
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         @foreach($candidates as $candidate)
+                            @php
+                                $approvedSlugs = $candidate->relationLoaded('candidateVerifications')
+                                    ? $candidate->candidateVerifications->where('status', 'approved')->pluck('verificationType.slug')->toArray()
+                                    : [];
+                            @endphp
                             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow duration-200">
                                 <div class="flex items-start justify-between mb-4">
                                     <div class="flex items-center gap-3">
@@ -175,6 +212,36 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                @if($candidate->relationLoaded('trustScore') && $candidate->trustScore)
+                                    <div class="mb-2 flex items-center gap-2">
+                                        <div class="flex-1 bg-gray-200 rounded-full h-1.5">
+                                            <div class="h-1.5 rounded-full
+                                                @if($candidate->trustScore->score >= 76) bg-green-500
+                                                @elseif($candidate->trustScore->score >= 51) bg-blue-500
+                                                @elseif($candidate->trustScore->score >= 26) bg-amber-500
+                                                @else bg-gray-400
+                                                @endif"
+                                                style="width: {{ $candidate->trustScore->score }}%">
+                                            </div>
+                                        </div>
+                                        <span class="text-xs font-medium
+                                            @if($candidate->trustScore->score >= 76) text-green-600
+                                            @elseif($candidate->trustScore->score >= 51) text-blue-600
+                                            @else text-gray-500
+                                            @endif">
+                                            {{ $candidate->trustScore->score }}/100
+                                        </span>
+                                    </div>
+                                @endif
+
+                                @if(!empty($approvedSlugs))
+                                    <div class="flex flex-wrap gap-1 mb-2">
+                                        @foreach(array_intersect($approvedSlugs, ['identity', 'education', 'employment', 'certification']) as $slug)
+                                            <x-verification-badge :type="$slug" status="verified"/>
+                                        @endforeach
+                                    </div>
+                                @endif
 
                                 <div class="flex flex-wrap gap-1 mb-3">
                                     @foreach($candidate->candidateSkills->take(5) as $skill)

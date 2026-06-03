@@ -108,7 +108,36 @@ class EmployerMarketplaceController extends Controller
             });
         }
 
-        $candidates = $query->paginate(20)->withQueryString();
+        if ($request->has('verified_identity') && $request->verified_identity) {
+            $query->whereHas('candidateVerifications', function ($q) {
+                $q->whereHas('verificationType', fn ($q) => $q->where('slug', 'identity'))
+                    ->where('status', 'approved');
+            });
+        }
+
+        if ($request->has('verified_education') && $request->verified_education) {
+            $query->whereHas('candidateVerifications', function ($q) {
+                $q->whereHas('verificationType', fn ($q) => $q->where('slug', 'education'))
+                    ->where('status', 'approved');
+            });
+        }
+
+        if ($request->has('verified_employment') && $request->verified_employment) {
+            $query->whereHas('candidateVerifications', function ($q) {
+                $q->whereHas('verificationType', fn ($q) => $q->where('slug', 'employment'))
+                    ->where('status', 'approved');
+            });
+        }
+
+        if ($request->has('trust_score_min') && $request->trust_score_min) {
+            $query->whereHas('trustScore', function ($q) use ($request) {
+                $q->where('score', '>=', (int) $request->trust_score_min);
+            });
+        }
+
+        $candidates = $query->with(['candidateProfile', 'trustScore', 'candidateVerifications' => fn ($q) => $q->with('verificationType')])
+            ->paginate(20)
+            ->withQueryString();
 
         $shortlistedIds = EmployerShortlist::where('employer_id', $user->id)
             ->pluck('candidate_id')
@@ -131,6 +160,8 @@ class EmployerMarketplaceController extends Controller
             'candidateEducation',
             'candidateAssessment',
             'candidateMedia',
+            'trustScore',
+            'candidateVerifications' => fn ($q) => $q->with('verificationType'),
         ]);
 
         $isShortlisted = EmployerShortlist::where('employer_id', $user->id)
@@ -162,10 +193,17 @@ class EmployerMarketplaceController extends Controller
             ];
         }
 
+        $approvedVerifications = $candidate->candidateVerifications
+            ->where('status', 'approved')
+            ->pluck('verificationType.slug')
+            ->toArray();
+
         return view('employer.marketplace.candidate', [
             'candidate' => $candidate,
             'isShortlisted' => $isShortlisted,
             'aiInsights' => $aiInsights,
+            'approvedVerifications' => $approvedVerifications,
+            'trustScore' => $candidate->trustScore,
         ]);
     }
 

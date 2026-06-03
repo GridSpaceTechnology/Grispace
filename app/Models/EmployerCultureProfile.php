@@ -9,8 +9,14 @@ class EmployerCultureProfile extends Model
 {
     protected $fillable = [
         'user_id',
-        'leadership_style',
+        'work_environment',
         'communication_style',
+        'leadership_style',
+        'company_pace',
+        'preferred_traits',
+        'motivation_factors',
+        'independence_level',
+        'culture_summary',
         'innovation_level',
         'decision_making_style',
         'work_pace',
@@ -18,9 +24,14 @@ class EmployerCultureProfile extends Model
         'values',
     ];
 
-    protected $casts = [
-        'values' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'preferred_traits' => 'array',
+            'motivation_factors' => 'array',
+            'values' => 'array',
+        ];
+    }
 
     public function user(): BelongsTo
     {
