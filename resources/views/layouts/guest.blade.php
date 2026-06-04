@@ -14,8 +14,6 @@
     </head>
     <body class="font-sans antialiased bg-gray-50">
         <div class="min-h-screen flex flex-col">
-            @include('layouts.navigation')
-
             <main class="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div class="w-full max-w-md">
                     {{ $slot }}

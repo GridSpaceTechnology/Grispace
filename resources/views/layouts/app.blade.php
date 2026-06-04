@@ -12,20 +12,22 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-slate-50">
-        <div class="min-h-screen flex flex-col pb-24 lg:pb-0">
-            @include('layouts.navigation')
-            <x-mobile-bottom-nav />
+    <body class="font-sans antialiased bg-slate-50 pb-20 md:pb-0">
+        <div class="min-h-screen flex flex-col">
+            @if(!request()->routeIs('admin*'))
+                @include('layouts.navigation')
+                <x-mobile-bottom-nav />
+            @endif
 
             @isset($header)
-                <header class="bg-white shadow-sm border-b border-slate-200">
+                <header class="bg-white shadow-sm border-b border-slate-200 z-30">
                     <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>
             @endisset
 
-<main class="flex-1">
+            <main class="flex-1 z-0">
                 {{ $slot ?? '' }}
                 @yield('content')
             </main>
