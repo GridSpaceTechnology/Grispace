@@ -7,6 +7,20 @@ export default {
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
+         './resources/**/*.js',
+        './resources/**/*.vue',
+    ],
+
+    safelist: [
+       'fixed',
+       'bottom-0',
+       'left-0',
+       'right-0',
+       'z-50',
+       'md:hidden',
+       'md:flex',
+       'hidden',
+       'flex',
     ],
 
     theme: {
