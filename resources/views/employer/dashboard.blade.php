@@ -219,7 +219,7 @@
                                         <span class="text-xs bg-white px-2 py-1 rounded border border-gray-200">{{ $skill->skill_name }}</span>
                                     @endforeach
                                 </div>
-                                <a href="{{ route('candidate.profile.show', ['user' => $candidate->id]) }}" class="block w-full text-center text-sm bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                <a href="{{ route('employer.marketplace.candidate', ['candidate' => $candidate->id]) }}" class="block w-full text-center text-sm bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors">
                                     View Profile
                                 </a>
                             </div>

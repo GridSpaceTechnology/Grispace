@@ -75,12 +75,12 @@ class JobApplication extends Model
 
     public function matchProfile(): HasOne
     {
-        return $this->hasOne(MatchProfile::class)->where('is_latest', true);
+        return $this->hasOne(MatchProfile::class, 'application_id')->where('is_latest', true);
     }
 
     public function matchProfiles(): HasMany
     {
-        return $this->hasMany(MatchProfile::class);
+        return $this->hasMany(MatchProfile::class, 'application_id');
     }
 
     public function stageHistories(): HasMany

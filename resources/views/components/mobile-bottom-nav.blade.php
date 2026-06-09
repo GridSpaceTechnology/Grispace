@@ -1,4 +1,6 @@
 @php
+    $isAuth = auth()->check();
+
     $navItems = [
         [
             'label' => 'Home',
@@ -18,31 +20,58 @@
             'url' => route('marketplace.index'),
             'active' => request()->routeIs('marketplace*'),
         ],
-        [
+    ];
+
+    if ($isAuth) {
+        $userRole = auth()->user()->role;
+        $navItems[] = [
             'label' => 'Messages',
             'icon' => 'message-circle',
-            'url' => '/messages',
-            'active' => request()->is('messages') || request()->is('messages/*'),
-        ],
-        [
+            'url' => $userRole === 'employer'
+                ? route('employer.messages')
+                : ($userRole === 'admin'
+                    ? route('admin.messages.index')
+                    : '/messages'),
+            'active' => request()->is('messages') || request()->is('messages/*')
+                || request()->is('employer/messages') || request()->is('employer/messages/*')
+                || request()->routeIs('admin.messages*'),
+        ];
+        $navItems[] = [
             'label' => 'Dashboard',
             'icon' => 'grid',
-            'url' => auth()->check()
-                ? (auth()->user()->role === 'admin'
-                    ? route('admin.dashboard')
-                    : (auth()->user()->role === 'employer'
-                        ? route('employer.dashboard')
-                        : route('candidate.dashboard')))
-                : route('login'),
+            'url' => $userRole === 'admin'
+                ? route('admin.dashboard')
+                : ($userRole === 'employer'
+                    ? route('employer.dashboard')
+                    : route('candidate.dashboard')),
             'active' => request()->routeIs('*.dashboard') || request()->routeIs('admin.*'),
-        ],
-        [
+        ];
+        $navItems[] = [
             'label' => 'Profile',
             'icon' => 'user',
             'url' => route('profile.edit'),
             'active' => request()->routeIs('profile*'),
-        ],
-    ];
+        ];
+        $navItems[] = [
+            'label' => 'Log Out',
+            'icon' => 'logout',
+            'route' => 'logout',
+            'form' => true,
+        ];
+    } else {
+        $navItems[] = [
+            'label' => 'Log In',
+            'icon' => 'user',
+            'url' => route('login'),
+            'active' => request()->routeIs('login'),
+        ];
+        $navItems[] = [
+            'label' => 'Sign Up',
+            'icon' => 'plus',
+            'url' => route('register'),
+            'active' => request()->routeIs('register'),
+        ];
+    }
 @endphp
 
 <nav
@@ -55,6 +84,27 @@
     >
         <div class="flex items-center justify-around h-[68px] px-2">
             @foreach ($navItems as $item)
+                @if (!empty($item['form']))
+                    <form method="POST" action="{{ route($item['route']) }}" class="flex items-center justify-center">
+                        @csrf
+                        <button type="submit"
+                            class="relative flex flex-col items-center justify-center w-[64px] h-full gap-0.5 transition-all duration-200 group cursor-pointer"
+                        >
+                            <div class="relative flex items-center justify-center w-6 h-6 transition-transform duration-200 group-active:scale-90">
+                                @if ($item['icon'] === 'logout')
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 dark:text-gray-300 transition-colors duration-200">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                        <polyline points="16 17 21 12 16 7"/>
+                                        <line x1="21" y1="12" x2="9" y2="12"/>
+                                    </svg>
+                                @endif
+                            </div>
+                            <span class="text-[10px] leading-tight whitespace-nowrap text-gray-500 dark:text-gray-300 font-medium transition-colors duration-200">
+                                {{ $item['label'] }}
+                            </span>
+                        </button>
+                    </form>
+                @else
                 <a
                     href="{{ $item['url'] }}"
                     class="relative flex flex-col items-center justify-center w-[64px] h-full gap-0.5 transition-all duration-200 group"
@@ -97,6 +147,17 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ $item['active'] ? 'text-[#EB5233]' : 'text-gray-500 dark:text-gray-300' }} transition-colors duration-200">
                                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
                             </svg>
+                        @elseif ($item['icon'] === 'plus')
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ $item['active'] ? 'text-[#EB5233]' : 'text-gray-500 dark:text-gray-300' }} transition-colors duration-200">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                        @elseif ($item['icon'] === 'logout')
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ $item['active'] ? 'text-[#EB5233]' : 'text-gray-500 dark:text-gray-300' }} transition-colors duration-200">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
                         @endif
                     </div>
 
@@ -104,6 +165,7 @@
                         {{ $item['label'] }}
                     </span>
                 </a>
+                @endif
             @endforeach
         </div>
     </div>
