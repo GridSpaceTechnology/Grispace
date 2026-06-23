@@ -92,7 +92,7 @@ class CandidateOnboardingController extends Controller
             ],
             8 => [
                 'role_video_url' => 'required|string|max:500',
-                'cv_path' => 'required|string|max:500',
+                'cv_path' => 'required|file|mimes:pdf,doc,docx|max:2048',
                 'linkedin_url' => 'nullable|string|max:500',
                 'github_url' => 'nullable|string|max:500',
                 'portfolio_links' => 'nullable|array',
@@ -226,11 +226,15 @@ class CandidateOnboardingController extends Controller
         $media = $user->candidateMedia()->firstOrNew([]);
         $media->fill([
             'role_video_url' => $request->input('role_video_url'),
-            'cv_path' => $request->input('cv_path'),
             'linkedin_url' => $request->input('linkedin_url'),
             'github_url' => $request->input('github_url'),
             'portfolio_links_json' => $request->input('portfolio_links', []),
         ]);
+
+        if ($request->hasFile('cv_path')) {
+            $media->cv_path = $request->file('cv_path')->store('cvs/'.$user->id, 'public');
+        }
+
         $media->save();
     }
 

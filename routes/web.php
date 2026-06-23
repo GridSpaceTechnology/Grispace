@@ -116,17 +116,17 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
     Route::get('/candidate/personality-assessment', [PersonalityAssessmentController::class, 'start'])
         ->name('candidate.personality.start');
 
-    Route::get('/candidate/personality-assessment/{question}', [PersonalityAssessmentController::class, 'showQuestion'])
-        ->name('candidate.personality.question');
-
-    Route::post('/candidate/personality-assessment/{question}/answer', [PersonalityAssessmentController::class, 'answer'])
-        ->name('candidate.personality.answer');
-
     Route::get('/candidate/personality-assessment/complete', [PersonalityAssessmentController::class, 'complete'])
         ->name('candidate.personality.complete');
 
     Route::post('/candidate/personality-assessment/skip', [PersonalityAssessmentController::class, 'skip'])
         ->name('candidate.personality.skip');
+
+    Route::get('/candidate/personality-assessment/{question}', [PersonalityAssessmentController::class, 'showQuestion'])
+        ->name('candidate.personality.question');
+
+    Route::post('/candidate/personality-assessment/{question}/answer', [PersonalityAssessmentController::class, 'answer'])
+        ->name('candidate.personality.answer');
 
     Route::get('/candidate/verification', [CandidateVerificationController::class, 'index'])
         ->name('candidate.verification');

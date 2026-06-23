@@ -27,7 +27,7 @@
             </div>
 
             <div class="bg-white shadow-lg rounded-lg p-8">
-                <form method="POST" action="{{ route('candidate.onboarding.store', ['step' => $step]) }}">
+                <form method="POST" action="{{ route('candidate.onboarding.store', ['step' => $step]) }}" enctype="multipart/form-data">
                     @csrf
 
                     <h2 class="text-xl font-semibold mb-6">Video & CV Upload</h2>
@@ -50,16 +50,17 @@
 
                         <div>
                             <label for="cv_path" class="block text-sm font-medium text-gray-700 mb-2">
-                                CV/Resume Path * <span class="text-gray-500">(required)</span>
+                                CV/Resume * <span class="text-gray-500">(required)</span>
                             </label>
-                            <input type="text" name="cv_path" id="cv_path" required
-                                   value="{{ old('cv_path', $media?->cv_path) }}"
-                                   placeholder="cv/your-name-resume.pdf"
-                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <p class="mt-1 text-sm text-gray-500">Path to your CV file in storage</p>
+                            <input type="file" name="cv_path" id="cv_path" required accept=".pdf,.doc,.docx"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <p class="mt-1 text-sm text-gray-500">Upload your CV (PDF, DOC, or DOCX)</p>
                             @error('cv_path')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
+                            @if($media?->cv_path)
+                                <p class="mt-1 text-sm text-green-600">Current file: {{ basename($media->cv_path) }}</p>
+                            @endif
                         </div>
 
                         <div>
