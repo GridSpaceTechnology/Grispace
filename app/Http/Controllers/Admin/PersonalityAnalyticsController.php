@@ -28,7 +28,7 @@ class PersonalityAnalyticsController extends Controller
             : 0;
 
         $totalQuestions = PersonalityQuestion::count();
-        $activeQuestions = PersonalityQuestion::where('active_status', true)->count();
+        $activeQuestions = PersonalityQuestion::where('is_active', true)->count();
 
         $totalAnswers = PersonalityAnswer::count();
 

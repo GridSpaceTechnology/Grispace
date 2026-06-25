@@ -10,6 +10,9 @@ class PersonalityQuestionOption extends Model
     protected $fillable = [
         'question_id',
         'option_text',
+        'option_value',
+        'personality_dimension',
+        'weight',
         'signal_key',
         'signal_value',
     ];

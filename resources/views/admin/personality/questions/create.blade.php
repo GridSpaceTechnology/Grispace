@@ -24,44 +24,36 @@
             <textarea name="question_text" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required></textarea>
         </div>
 
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
-            <select name="question_type" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="single_choice">Single Choice</option>
-                <option value="multiple_choice">Multiple Choice</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
-            <input type="number" name="display_order" min="0" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
+                <select name="question_type" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="single_choice">Single Choice</option>
+                    <option value="multiple_choice">Multiple Choice</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                <input type="number" name="display_order" min="0" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+            </div>
         </div>
 
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-3">Answer Options</label>
             <div id="options-container" class="space-y-3">
-                <div class="option-row flex gap-3 items-start">
-                    <div class="flex-1">
-                        <input type="text" name="options[0][option_text]" placeholder="Option text" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                @for($i = 0; $i < 4; $i++)
+                    <div class="option-row flex gap-3 items-start">
+                        <div class="flex-1">
+                            <input type="text" name="options[{{ $i }}][option_text]" placeholder="Option text" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        </div>
+                        <div class="w-40">
+                            <input type="text" name="options[{{ $i }}][personality_dimension]" placeholder="Dimension" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+                        <div class="w-20">
+                            <input type="number" name="options[{{ $i }}][weight]" placeholder="Wt" min="1" max="10" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
                     </div>
-                    <div class="w-40">
-                        <input type="text" name="options[0][signal_key]" placeholder="Signal key" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                    </div>
-                    <div class="w-24">
-                        <input type="number" name="options[0][signal_value]" placeholder="Value" min="1" max="10" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                    </div>
-                </div>
-                <div class="option-row flex gap-3 items-start">
-                    <div class="flex-1">
-                        <input type="text" name="options[1][option_text]" placeholder="Option text" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                    </div>
-                    <div class="w-40">
-                        <input type="text" name="options[1][signal_key]" placeholder="Signal key" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                    </div>
-                    <div class="w-24">
-                        <input type="number" name="options[1][signal_value]" placeholder="Value" min="1" max="10" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                    </div>
-                </div>
+                @endfor
             </div>
         </div>
 

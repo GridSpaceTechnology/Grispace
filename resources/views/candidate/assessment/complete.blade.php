@@ -19,6 +19,47 @@
 
         @if($profile)
             <div class="space-y-6">
+                @if($profile->dimension_scores)
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+                        <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <span>Personality Dimensions</span>
+                        </h2>
+                        <div class="space-y-4">
+                            @php
+                                $sorted = collect($profile->dimension_scores)->sortDesc();
+                            @endphp
+                            @foreach($sorted as $dimension => $score)
+                                <div>
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <span class="text-sm font-medium text-slate-700">{{ $dimension }}</span>
+                                        <span class="text-sm font-bold" style="color: {{ $score >= 70 ? '#EB5233' : '#052E5C' }};">{{ $score }}%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                        <div class="h-full rounded-full transition-all duration-700 ease-out"
+                                             style="width: {{ $score }}%; background-color: {{ $score >= 70 ? '#EB5233' : '#052E5C' }};">
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                @if($profile->dominant_traits)
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+                        <h2 class="text-xl font-bold text-slate-900 mb-4">
+                            Dominant Traits
+                        </h2>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($profile->dominant_traits as $trait)
+                                <span class="px-4 py-2 rounded-full text-sm font-medium text-white" style="background-color: #EB5233;">
+                                    {{ $trait }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
                     <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                         <span>Personality Summary</span>
@@ -27,6 +68,17 @@
                         {{ $profile->personality_summary }}
                     </p>
                 </div>
+
+                @if($profile->workplace_compatibility)
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+                        <h2 class="text-xl font-bold text-slate-900 mb-4">
+                            Workplace Compatibility
+                        </h2>
+                        <p class="text-lg text-slate-700 leading-relaxed">
+                            {{ $profile->workplace_compatibility }}
+                        </p>
+                    </div>
+                @endif
 
                 <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
                     <h2 class="text-xl font-bold text-slate-900 mb-4">
@@ -72,7 +124,7 @@
                         @foreach($recommendedJobs as $match)
                             @php $job = $match['job'] ?? null; @endphp
                             @if($job)
-                                <div class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-primary hover:bg-orange-50 transition-all">
+                                <div class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-all">
                                     <div>
                                         <h3 class="font-semibold text-slate-900">{{ $job->title }}</h3>
                                         <p class="text-sm text-slate-500">{{ $job->company?->name ?? 'Company' }}</p>

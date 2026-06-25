@@ -11,14 +11,14 @@ class PersonalityQuestion extends Model
         'category',
         'question_text',
         'question_type',
-        'active_status',
+        'is_active',
         'display_order',
     ];
 
     protected function casts(): array
     {
         return [
-            'active_status' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -29,7 +29,7 @@ class PersonalityQuestion extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('active_status', true);
+        return $query->where('is_active', true);
     }
 
     public function scopeByCategory($query, string $category)

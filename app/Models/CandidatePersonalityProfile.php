@@ -19,6 +19,9 @@ class CandidatePersonalityProfile extends Model
         'personality_summary',
         'work_style_summary',
         'strengths_summary',
+        'dimension_scores',
+        'dominant_traits',
+        'workplace_compatibility',
         'assessment_completed',
         'completed_at',
     ];
@@ -28,6 +31,8 @@ class CandidatePersonalityProfile extends Model
         return [
             'assessment_completed' => 'boolean',
             'completed_at' => 'datetime',
+            'dimension_scores' => 'array',
+            'dominant_traits' => 'array',
         ];
     }
 

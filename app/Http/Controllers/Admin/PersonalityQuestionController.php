@@ -25,7 +25,7 @@ class PersonalityQuestionController extends Controller
             'communication_style',
             'team_dynamics',
             'problem_solving',
-            'leadership',
+            'leadership_initiative',
             'environment_preference',
             'motivation',
             'temperament',
@@ -43,8 +43,9 @@ class PersonalityQuestionController extends Controller
             'display_order' => 'required|integer|min:0',
             'options' => 'required|array|min:2',
             'options.*.option_text' => 'required|string|max:255',
-            'options.*.signal_key' => 'required|string|max:100',
-            'options.*.signal_value' => 'required|integer|min:1|max:10',
+            'options.*.option_value' => 'nullable|integer|min:1|max:10',
+            'options.*.personality_dimension' => 'nullable|string|max:100',
+            'options.*.weight' => 'nullable|integer|min:1|max:10',
         ]);
 
         $question = PersonalityQuestion::create([
@@ -57,8 +58,11 @@ class PersonalityQuestionController extends Controller
         foreach ($validated['options'] as $option) {
             $question->options()->create([
                 'option_text' => $option['option_text'],
-                'signal_key' => $option['signal_key'],
-                'signal_value' => $option['signal_value'],
+                'option_value' => $option['option_value'] ?? 1,
+                'personality_dimension' => $option['personality_dimension'] ?? null,
+                'weight' => $option['weight'] ?? 1,
+                'signal_key' => $option['personality_dimension'] ?? '',
+                'signal_value' => $option['weight'] ?? 1,
             ]);
         }
 
@@ -74,7 +78,7 @@ class PersonalityQuestionController extends Controller
             'communication_style',
             'team_dynamics',
             'problem_solving',
-            'leadership',
+            'leadership_initiative',
             'environment_preference',
             'motivation',
             'temperament',
@@ -89,20 +93,21 @@ class PersonalityQuestionController extends Controller
             'category' => 'required|string|max:255',
             'question_text' => 'required|string',
             'question_type' => 'required|string|max:50',
-            'active_status' => 'required|boolean',
+            'is_active' => 'required|boolean',
             'display_order' => 'required|integer|min:0',
             'options' => 'required|array|min:2',
             'options.*.id' => 'nullable|exists:personality_question_options,id',
             'options.*.option_text' => 'required|string|max:255',
-            'options.*.signal_key' => 'required|string|max:100',
-            'options.*.signal_value' => 'required|integer|min:1|max:10',
+            'options.*.option_value' => 'nullable|integer|min:1|max:10',
+            'options.*.personality_dimension' => 'nullable|string|max:100',
+            'options.*.weight' => 'nullable|integer|min:1|max:10',
         ]);
 
         $question->update([
             'category' => $validated['category'],
             'question_text' => $validated['question_text'],
             'question_type' => $validated['question_type'],
-            'active_status' => $validated['active_status'],
+            'is_active' => $validated['is_active'],
             'display_order' => $validated['display_order'],
         ]);
 
@@ -113,16 +118,22 @@ class PersonalityQuestionController extends Controller
                 if ($option) {
                     $option->update([
                         'option_text' => $optionData['option_text'],
-                        'signal_key' => $optionData['signal_key'],
-                        'signal_value' => $optionData['signal_value'],
+                        'option_value' => $optionData['option_value'] ?? 1,
+                        'personality_dimension' => $optionData['personality_dimension'] ?? null,
+                        'weight' => $optionData['weight'] ?? 1,
+                        'signal_key' => $optionData['personality_dimension'] ?? '',
+                        'signal_value' => $optionData['weight'] ?? 1,
                     ]);
                     $existingIds[] = $option->id;
                 }
             } else {
                 $newOption = $question->options()->create([
                     'option_text' => $optionData['option_text'],
-                    'signal_key' => $optionData['signal_key'],
-                    'signal_value' => $optionData['signal_value'],
+                    'option_value' => $optionData['option_value'] ?? 1,
+                    'personality_dimension' => $optionData['personality_dimension'] ?? null,
+                    'weight' => $optionData['weight'] ?? 1,
+                    'signal_key' => $optionData['personality_dimension'] ?? '',
+                    'signal_value' => $optionData['weight'] ?? 1,
                 ]);
                 $existingIds[] = $newOption->id;
             }
@@ -146,7 +157,7 @@ class PersonalityQuestionController extends Controller
     public function toggleStatus(PersonalityQuestion $question)
     {
         $question->update([
-            'active_status' => ! $question->active_status,
+            'is_active' => ! $question->is_active,
         ]);
 
         return back()->with('success', 'Question status updated.');

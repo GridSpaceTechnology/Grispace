@@ -41,8 +41,8 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <form method="POST" action="{{ route('admin.personality.questions.toggle', $question) }}">
                             @csrf
-                            <button type="submit" class="px-2 py-1 text-xs font-medium rounded-full {{ $question->active_status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ $question->active_status ? 'Active' : 'Disabled' }}
+                            <button type="submit" class="px-2 py-1 text-xs font-medium rounded-full {{ $question->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                {{ $question->is_active ? 'Active' : 'Disabled' }}
                             </button>
                         </form>
                     </td>

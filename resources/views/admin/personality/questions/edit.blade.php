@@ -41,9 +41,9 @@
 
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Active Status</label>
-            <select name="active_status" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="1" {{ $question->active_status ? 'selected' : '' }}>Active</option>
-                <option value="0" {{ !$question->active_status ? 'selected' : '' }}>Disabled</option>
+            <select name="is_active" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <option value="1" {{ $question->is_active ? 'selected' : '' }}>Active</option>
+                <option value="0" {{ !$question->is_active ? 'selected' : '' }}>Disabled</option>
             </select>
         </div>
 
@@ -57,10 +57,10 @@
                             <input type="text" name="options[{{ $index }}][option_text]" value="{{ $option->option_text }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                         </div>
                         <div class="w-40">
-                            <input type="text" name="options[{{ $index }}][signal_key]" value="{{ $option->signal_key }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            <input type="text" name="options[{{ $index }}][personality_dimension]" value="{{ $option->personality_dimension }}" placeholder="Dimension" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         </div>
-                        <div class="w-24">
-                            <input type="number" name="options[{{ $index }}][signal_value]" value="{{ $option->signal_value }}" min="1" max="10" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <div class="w-20">
+                            <input type="number" name="options[{{ $index }}][weight]" value="{{ $option->weight }}" placeholder="Wt" min="1" max="10" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         </div>
                     </div>
                 @endforeach

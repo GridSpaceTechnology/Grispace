@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PersonalityAnswer;
 use App\Models\PersonalityQuestion;
 use App\Services\MatchingEngineService;
+use App\Services\PersonalityAssessmentService;
 use App\Services\PersonalityScoringService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class PersonalityAssessmentController extends Controller
 {
     public function __construct(
+        protected PersonalityAssessmentService $assessmentService,
         protected PersonalityScoringService $scoringService
     ) {}
 
@@ -25,25 +26,20 @@ class PersonalityAssessmentController extends Controller
             return redirect()->route('candidate.personality.complete');
         }
 
-        $firstQuestion = PersonalityQuestion::active()
-            ->ordered()
-            ->with('options')
-            ->first();
+        $firstQuestion = $this->assessmentService->getFirstQuestion();
 
         if (! $firstQuestion) {
             return redirect()->route('candidate.dashboard')
                 ->with('error', 'Assessment is not available at this time.');
         }
 
-        $totalQuestions = PersonalityQuestion::active()->count();
-        $answeredCount = PersonalityAnswer::where('candidate_id', $user->id)->count();
-        $currentQuestionNumber = 1;
+        $progress = $this->assessmentService->getQuestionProgress($user);
+        $estimatedTime = $this->assessmentService->getEstimatedTimeRemaining($user);
 
         return view('candidate.assessment.assessment', compact(
             'firstQuestion',
-            'totalQuestions',
-            'answeredCount',
-            'currentQuestionNumber'
+            'progress',
+            'estimatedTime',
         ));
     }
 
@@ -51,24 +47,28 @@ class PersonalityAssessmentController extends Controller
     {
         $user = Auth::user();
 
-        if (! $question->active_status) {
+        if (! $question->is_active) {
             return redirect()->route('candidate.personality.start');
         }
 
         $question->load('options');
 
-        $totalQuestions = PersonalityQuestion::active()->count();
-        $answeredCount = PersonalityAnswer::where('candidate_id', $user->id)->count();
+        $progress = $this->assessmentService->getQuestionProgress($user);
+        $currentQuestionNumber = $this->assessmentService->getCurrentQuestionNumber($user, $question);
+        $estimatedTime = $this->assessmentService->getEstimatedTimeRemaining($user);
+        $previousQuestion = $this->assessmentService->getPreviousQuestion($question);
 
-        $allQuestions = PersonalityQuestion::active()->ordered()->pluck('id')->toArray();
-        $currentIndex = array_search($question->id, $allQuestions);
-        $currentQuestionNumber = $currentIndex !== false ? $currentIndex + 1 : 1;
+        $existingAnswer = $user->personalityAnswers()
+            ->where('question_id', $question->id)
+            ->first();
 
         return view('candidate.assessment.assessment', compact(
             'question',
-            'totalQuestions',
-            'answeredCount',
-            'currentQuestionNumber'
+            'progress',
+            'currentQuestionNumber',
+            'estimatedTime',
+            'previousQuestion',
+            'existingAnswer',
         ));
     }
 
@@ -82,32 +82,35 @@ class PersonalityAssessmentController extends Controller
 
         $option = $question->options()->findOrFail($validated['option_id']);
 
-        PersonalityAnswer::updateOrCreate(
-            [
-                'candidate_id' => $user->id,
-                'question_id' => $question->id,
-            ],
-            [
-                'selected_option_id' => $option->id,
-            ]
-        );
+        $this->assessmentService->saveAnswer($user, $question, $option->id);
 
-        $nextQuestion = PersonalityQuestion::active()
-            ->ordered()
-            ->where('display_order', '>', $question->display_order)
-            ->orWhere(function ($q) use ($question) {
-                $q->where('id', '>', $question->id)
-                    ->where('display_order', $question->display_order);
-            })
-            ->where('active_status', true)
-            ->orderBy('display_order')
-            ->orderBy('id')
-            ->first();
+        if ($request->wantsJson()) {
+            $progress = $this->assessmentService->getQuestionProgress($user);
+            $estimatedTime = $this->assessmentService->getEstimatedTimeRemaining($user);
+
+            return response()->json([
+                'success' => true,
+                'progress' => $progress,
+                'estimated_time_remaining' => $estimatedTime,
+            ]);
+        }
+
+        $nextQuestion = $this->assessmentService->getNextQuestion($question);
 
         if (! $nextQuestion) {
-            $this->scoringService->generateProfile($user);
+            $this->assessmentService->completeAssessment($user);
 
             return redirect()->route('candidate.personality.complete');
+        }
+
+        $previous = $request->input('previous', false);
+
+        if ($previous) {
+            $prev = $this->assessmentService->getPreviousQuestion($question);
+
+            if ($prev) {
+                return redirect()->route('candidate.personality.question', $prev);
+            }
         }
 
         return redirect()->route('candidate.personality.question', $nextQuestion);
