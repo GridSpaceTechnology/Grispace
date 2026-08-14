@@ -11,6 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
+
         Schema::dropIfExists('applications');
 
         Schema::create('applications', function (Blueprint $table) {
@@ -38,6 +40,8 @@ return new class extends Migration
             $table->index(['status']);
             $table->index(['match_score']);
         });
+
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
