@@ -16,7 +16,6 @@ class Job extends Model
         'title',
         'slug',
         'role',
-        'department',
         'location',
         'description',
         'industry',
@@ -89,11 +88,6 @@ class Job extends Model
     public function getRequiredSkills(): array
     {
         return $this->required_skills_json ?? [];
-    }
-
-    public function getDepartmentAttribute(): string
-    {
-        return $this->role ?? '';
     }
 
     public function getLocationAttribute(): ?string

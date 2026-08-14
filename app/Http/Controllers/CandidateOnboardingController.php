@@ -91,7 +91,7 @@ class CandidateOnboardingController extends Controller
                 'greatest_achievement' => 'nullable|string',
             ],
             8 => [
-                'role_video_url' => 'required|string|max:500',
+                'role_video_url' => 'nullable|string|max:500',
                 'cv_path' => 'required|file|mimes:pdf,doc,docx|max:2048',
                 'linkedin_url' => 'nullable|string|max:500',
                 'github_url' => 'nullable|string|max:500',
@@ -300,10 +300,6 @@ class CandidateOnboardingController extends Controller
     protected function canCompleteOnboarding($user): bool
     {
         if (! $user->candidateProfile || ! $user->candidateProfile->desired_role) {
-            return false;
-        }
-
-        if (! $user->candidateMedia || ! $user->candidateMedia->role_video_url) {
             return false;
         }
 

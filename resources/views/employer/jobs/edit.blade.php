@@ -38,13 +38,6 @@
                         </div>
 
                         <div>
-                            <label for="department" class="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                            <input type="text" name="department" id="department"
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                   value="{{ old('department', $job->role) }}">
-                        </div>
-
-                        <div>
                             <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
                             <input type="text" name="location" id="location"
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"

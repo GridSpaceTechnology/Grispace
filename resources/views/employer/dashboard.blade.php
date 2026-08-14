@@ -123,7 +123,7 @@
                         </div>
                     @else
                         <div class="space-y-4">
-                            @foreach($activeJobs->take(5) as $job)
+                            @foreach($activeJobs as $job)
                                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                     <div>
                                         <h3 class="font-medium text-gray-900">{{ $job->title }}</h3>

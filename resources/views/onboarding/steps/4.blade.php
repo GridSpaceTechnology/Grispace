@@ -1,6 +1,13 @@
 @php
     $assessment = $user->candidateAssessment;
     $personalityTraits = ['openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism'];
+    $traitDescriptions = [
+        'openness' => 'Curiosity and willingness to try new ideas',
+        'conscientiousness' => 'Organization, reliability, and attention to detail',
+        'extraversion' => 'Energy drawn from social interaction',
+        'agreeableness' => 'Cooperation and consideration for others',
+        'neuroticism' => 'Emotional stability under pressure',
+    ];
 @endphp
 
 <!DOCTYPE html>
@@ -40,6 +47,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 {{ ucfirst($trait) }}: <span id="{{ $trait }}-display">{{ old('personality_scores.' . $trait, $assessment?->personality_scores_json[$trait] ?? 50) }}</span>/100
                             </label>
+                            <p class="text-sm text-gray-500 mb-2">{{ $traitDescriptions[$trait] }}</p>
                             <input type="range" name="personality_scores[{{ $trait }}]" 
                                    min="0" max="100"
                                    value="{{ old('personality_scores.' . $trait, $assessment?->personality_scores_json[$trait] ?? 50) }}"

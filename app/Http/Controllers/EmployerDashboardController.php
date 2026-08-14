@@ -21,9 +21,10 @@ class EmployerDashboardController extends Controller
         $employerProfile = $user->employerProfile;
 
         $activeJobs = Job::where('employer_id', $user->id)
-            ->where('status', 'active')
+            ->where('status', 'open')
             ->withCount('applications')
             ->orderBy('created_at', 'desc')
+            ->take(5)
             ->get();
 
         $recentApplications = JobApplication::whereHas('job', function ($query) use ($user) {

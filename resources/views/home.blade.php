@@ -42,13 +42,13 @@
                 <aside class="lg:w-56 flex-shrink-0">
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sticky top-24">
                         <h3 class="font-semibold text-slate-900 mb-3 text-sm">Categories</h3>
-                        <ul class="space-y-1">
-                            @php
-                            $categories = ['Technology', 'Marketing', 'HR & Culture', 'Design', 'Data Science', 'Finance'];
-                            @endphp
+                        @php
+                        $categories = ['Technology', 'Marketing', 'HR & Culture', 'Design', 'Data Science', 'Finance'];
+                        @endphp
+                        <ul class="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:flex-col sm:gap-0 sm:space-y-1 sm:overflow-visible sm:pb-0 sm:mx-0 sm:px-0">
                             @foreach($categories as $category)
-                                <li>
-                                    <a href="{{ route('marketplace.index') }}" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors text-sm">
+                                <li class="shrink-0 sm:shrink">
+                                    <a href="{{ route('marketplace.index') }}" class="block whitespace-nowrap px-3 py-2 rounded-lg bg-slate-100 sm:bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors text-sm sm:whitespace-normal">
                                         {{ $category }}
                                     </a>
                                 </li>

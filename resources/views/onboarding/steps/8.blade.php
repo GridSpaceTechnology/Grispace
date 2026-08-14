@@ -36,13 +36,14 @@
                     <div class="space-y-6">
                         <div>
                             <label for="role_video_url" class="block text-sm font-medium text-gray-700 mb-2">
-                                Role Video URL * <span class="text-gray-500">(required)</span>
+                                Role Video URL
                             </label>
-                            <input type="url" name="role_video_url" id="role_video_url" required
+                            <input type="url" name="role_video_url" id="role_video_url"
                                    value="{{ old('role_video_url', $media?->role_video_url) }}"
                                    placeholder="https://..."
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <p class="mt-1 text-sm text-gray-500">Link to your video (YouTube, Vimeo, etc.)</p>
+                            <p class="mt-1 text-sm text-gray-500">Candidates with a short video introduction are up to 3x more likely to get noticed by employers. It's optional, but highly recommended.</p>
                             @error('role_video_url')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror

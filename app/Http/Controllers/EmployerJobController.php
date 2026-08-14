@@ -36,7 +36,6 @@ class EmployerJobController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'role' => 'required|string|max:255',
-            'department' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'employment_type' => 'required|in:full_time,part_time,contract,freelance,internship',
             'work_preference' => 'required|in:remote,hybrid,onsite,flexible',
@@ -101,7 +100,6 @@ class EmployerJobController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'role' => 'required|string|max:255',
-            'department' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'location_country' => 'nullable|string|max:100',
             'employment_type' => 'required|in:full_time,part_time,contract,freelance,internship',

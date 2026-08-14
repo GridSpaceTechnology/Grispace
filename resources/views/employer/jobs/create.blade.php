@@ -37,13 +37,6 @@
                         </div>
 
                         <div>
-                            <label for="department" class="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                            <input type="text" name="department" id="department"
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                   placeholder="e.g. Product">
-                        </div>
-
-                        <div>
                             <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
                             <input type="text" name="location" id="location"
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
@@ -155,9 +148,9 @@
                                     class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Any</option>
                                 <option value="analytical">Analytical</option>
-                                <option value="creative">Creative</option>
-                                <option value="practical">Practical</option>
-                                <option value="social">Social</option>
+                                <option value="expressive">Expressive</option>
+                                <option value="amiable">Amiable</option>
+                                <option value="driver">Driver</option>
                             </select>
                         </div>
                     </div>

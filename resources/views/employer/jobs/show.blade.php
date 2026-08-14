@@ -81,10 +81,6 @@
                             <dd class="text-sm font-medium text-gray-900">{{ $job->created_at->diffForHumans() }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm text-gray-500">Department</dt>
-                            <dd class="text-sm font-medium text-gray-900">{{ $job->department ?? 'Not specified' }}</dd>
-                        </div>
-                        <div>
                             <dt class="text-sm text-gray-500">Min. Experience</dt>
                             <dd class="text-sm font-medium text-gray-900">{{ $job->minimum_experience ?? 0 }} years</dd>
                         </div>

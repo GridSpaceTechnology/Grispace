@@ -1,5 +1,11 @@
 @php
     $assessment = $user->candidateAssessment;
+
+    $subskillsInitial = collect(old('subskill_breakdown', $assessment?->subskill_breakdown_json ?? [['name' => '', 'score' => 50]]))
+        ->map(fn ($subskill) => [
+            'name' => $subskill['name'] ?? '',
+            'score' => (int) ($subskill['score'] ?? 50),
+        ])->values()->all();
 @endphp
 
 <!DOCTYPE html>
@@ -50,19 +56,30 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Subskill Breakdown (Optional)</label>
-                            <div id="subskills-container" class="space-y-2">
-                                @foreach(old('subskill_breakdown', $assessment?->subskill_breakdown_json ?? [['name' => '', 'score' => 50]]) as $index => $subskill)
-                                <div class="flex gap-3 subskill-row">
-                                    <input type="text" name="subskill_breakdown[{{ $index }}][name]" placeholder="Subskill name"
-                                           value="{{ $subskill['name'] ?? '' }}"
-                                           class="flex-1 rounded-md border-gray-300 shadow-sm">
-                                    <input type="number" name="subskill_breakdown[{{ $index }}][score]" placeholder="Score" min="0" max="100"
-                                           value="{{ $subskill['score'] ?? 50 }}"
-                                           class="w-24 rounded-md border-gray-300 shadow-sm">
+                            <div x-data="{
+                                subskills: {{ \Illuminate\Support\Js::from($subskillsInitial) }},
+                                addSubskill() { this.subskills.push({ name: '', score: 50 }); },
+                                removeSubskill(index) { if (this.subskills.length > 1) this.subskills.splice(index, 1); }
+                            }">
+                                <div class="space-y-2">
+                                    <template x-for="(subskill, index) in subskills" :key="index">
+                                        <div class="flex gap-3">
+                                            <input type="text" :name="`subskill_breakdown[${index}][name]`" x-model="subskill.name" placeholder="Subskill name"
+                                                   class="flex-1 rounded-md border-gray-300 shadow-sm">
+                                            <input type="number" :name="`subskill_breakdown[${index}][score]`" x-model.number="subskill.score" placeholder="Score" min="0" max="100"
+                                                   class="w-24 rounded-md border-gray-300 shadow-sm">
+                                            <button type="button" x-on:click="removeSubskill(index)" x-show="subskills.length > 1"
+                                                    class="shrink-0 text-gray-400 hover:text-red-600 transition-colors" aria-label="Remove subskill">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </template>
                                 </div>
-                                @endforeach
+                                <button type="button" x-on:click="addSubskill()" class="mt-3 text-sm text-indigo-600 hover:text-indigo-800">+ Add Subskill</button>
                             </div>
-                            <button type="button" onclick="addSubskillRow()" class="mt-3 text-sm text-indigo-600 hover:text-indigo-800">+ Add Subskill</button>
                         </div>
                     </div>
 
