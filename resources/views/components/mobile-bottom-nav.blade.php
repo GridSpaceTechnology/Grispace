@@ -52,12 +52,6 @@
             'url' => route('profile.edit'),
             'active' => request()->routeIs('profile*'),
         ];
-        $navItems[] = [
-            'label' => 'Log Out',
-            'icon' => 'logout',
-            'route' => 'logout',
-            'form' => true,
-        ];
     } else {
         $navItems[] = [
             'label' => 'Log In',
@@ -84,30 +78,9 @@
     >
         <div class="flex items-center justify-around h-[68px] px-2">
             @foreach ($navItems as $item)
-                @if (!empty($item['form']))
-                    <form method="POST" action="{{ route($item['route']) }}" class="flex items-center justify-center">
-                        @csrf
-                        <button type="submit"
-                            class="relative flex flex-col items-center justify-center w-[64px] h-full gap-0.5 transition-all duration-200 group cursor-pointer"
-                        >
-                            <div class="relative flex items-center justify-center w-6 h-6 transition-transform duration-200 group-active:scale-90">
-                                @if ($item['icon'] === 'logout')
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 dark:text-gray-300 transition-colors duration-200">
-                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                                        <polyline points="16 17 21 12 16 7"/>
-                                        <line x1="21" y1="12" x2="9" y2="12"/>
-                                    </svg>
-                                @endif
-                            </div>
-                            <span class="text-[10px] leading-tight whitespace-nowrap text-gray-500 dark:text-gray-300 font-medium transition-colors duration-200">
-                                {{ $item['label'] }}
-                            </span>
-                        </button>
-                    </form>
-                @else
                 <a
                     href="{{ $item['url'] }}"
-                    class="relative flex flex-col items-center justify-center w-[64px] h-full gap-0.5 transition-all duration-200 group"
+                    class="relative flex flex-1 flex-col items-center justify-center h-full min-w-0 gap-0.5 transition-all duration-200 group"
                     @if ($item['active']) aria-current="page" @endif
                 >
                     @if ($item['active'])
@@ -152,12 +125,6 @@
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                             </svg>
-                        @elseif ($item['icon'] === 'logout')
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ $item['active'] ? 'text-[#EB5233]' : 'text-gray-500 dark:text-gray-300' }} transition-colors duration-200">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                                <polyline points="16 17 21 12 16 7"/>
-                                <line x1="21" y1="12" x2="9" y2="12"/>
-                            </svg>
                         @endif
                     </div>
 
@@ -165,7 +132,6 @@
                         {{ $item['label'] }}
                     </span>
                 </a>
-                @endif
             @endforeach
         </div>
     </div>
