@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PersonalityQuestion;
+use App\Services\PersonalityAssessmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +12,25 @@ use Illuminate\Validation\Rule;
 class CandidateOnboardingController extends Controller
 {
     public const TOTAL_STEPS = 8;
+
+    private const STEP_CATEGORIES = [
+        4 => [
+            'work_style',
+            'communication_style',
+            'team_dynamics',
+            'problem_solving',
+        ],
+        5 => [
+            'leadership_initiative',
+            'work_environment_preference',
+            'motivation_drivers',
+            'temperament_indicators',
+        ],
+    ];
+
+    public function __construct(
+        protected PersonalityAssessmentService $assessmentService
+    ) {}
 
     public function show(Request $request)
     {
@@ -22,11 +43,110 @@ class CandidateOnboardingController extends Controller
         $step = $request->route('step') ?? 1;
         $step = max(1, min(self::TOTAL_STEPS, (int) $step));
 
+        if (isset(self::STEP_CATEGORIES[$step])) {
+            return redirect()->route('candidate.onboarding.assessment', ['step' => $step]);
+        }
+
         return view("onboarding.steps.{$step}", [
             'step' => $step,
             'totalSteps' => self::TOTAL_STEPS,
             'user' => $user,
         ]);
+    }
+
+    public function showAssessment(Request $request, int $step)
+    {
+        $user = Auth::user();
+
+        if ($user->onboarding_completed) {
+            return redirect()->route('candidate.dashboard');
+        }
+
+        $categories = $this->categoriesForStep($step);
+
+        $firstQuestion = $this->assessmentService->getFirstQuestionForSections($categories);
+
+        if (! $firstQuestion) {
+            return redirect()->route('candidate.onboarding.step', ['step' => min(self::TOTAL_STEPS, $step + 1)]);
+        }
+
+        return redirect()->route('candidate.onboarding.assessment.question', [
+            'step' => $step,
+            'question' => $firstQuestion,
+        ]);
+    }
+
+    public function showAssessmentQuestion(Request $request, int $step, PersonalityQuestion $question)
+    {
+        $user = Auth::user();
+
+        $categories = $this->categoriesForStep($step);
+
+        if (! in_array($question->category, $categories, true) || ! $question->is_active) {
+            return redirect()->route('candidate.onboarding.assessment', ['step' => $step]);
+        }
+
+        $question->load('options');
+
+        $totalQuestions = $this->assessmentService->getTotalQuestionsForSections($categories);
+        $currentQuestionNumber = $this->assessmentService->getQuestionNumberForSections($categories, $question);
+        $previousQuestion = $this->assessmentService->getPreviousQuestionForSections($categories, $question);
+        $existingAnswer = $user->personalityAnswers()
+            ->where('question_id', $question->id)
+            ->first();
+
+        return view('onboarding.assessment.question', [
+            'step' => $step,
+            'totalSteps' => self::TOTAL_STEPS,
+            'title' => 'Personality Assessment',
+            'user' => $user,
+            'question' => $question,
+            'totalQuestions' => $totalQuestions,
+            'currentQuestionNumber' => $currentQuestionNumber,
+            'previousQuestion' => $previousQuestion,
+            'existingAnswer' => $existingAnswer,
+        ]);
+    }
+
+    public function saveAssessmentAnswer(Request $request, int $step, PersonalityQuestion $question)
+    {
+        $user = Auth::user();
+
+        $categories = $this->categoriesForStep($step);
+
+        if (! in_array($question->category, $categories, true)) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'option_id' => 'required|exists:personality_question_options,id',
+        ]);
+
+        $option = $question->options()->findOrFail($validated['option_id']);
+
+        $this->assessmentService->saveAnswer($user, $question, $option->id);
+
+        $this->updateProfileCompletion($user);
+
+        $nextQuestion = $this->assessmentService->getNextQuestionForSections($categories, $question);
+
+        if ($nextQuestion) {
+            return redirect()->route('candidate.onboarding.assessment.question', [
+                'step' => $step,
+                'question' => $nextQuestion,
+            ]);
+        }
+
+        if ($step === 4) {
+            return redirect()->route('candidate.onboarding.assessment', ['step' => 5])
+                ->with('success', 'Part one complete. Let\'s finish the second part!');
+        }
+
+        $this->assessmentService->completeAssessment($user);
+        $this->syncTemperamentFromProfile($user);
+
+        return redirect()->route('candidate.onboarding.step', ['step' => 6])
+            ->with('success', 'Assessment complete! Your profile has been updated.');
     }
 
     public function store(Request $request)
@@ -77,12 +197,6 @@ class CandidateOnboardingController extends Controller
                 'skill_score' => 'nullable|integer|min:0|max:100',
                 'subskill_breakdown' => 'nullable|array',
             ],
-            4 => [
-                'personality_scores' => 'nullable|array',
-            ],
-            5 => [
-                'temperament_type' => ['nullable', Rule::in(['analytical', 'driver', 'expressive', 'amiable'])],
-            ],
             6 => [
                 'organizational_type' => 'nullable|string|max:255',
                 'motivation_drivers' => 'nullable|array',
@@ -109,8 +223,6 @@ class CandidateOnboardingController extends Controller
             1 => $this->saveStep1($user, $request),
             2 => $this->saveStep2($user, $request),
             3 => $this->saveStep3($user, $request),
-            4 => $this->saveStep4($user, $request),
-            5 => $this->saveStep5($user, $request),
             6 => $this->saveStep6($user, $request),
             7 => $this->saveStep7($user, $request),
             8 => $this->saveStep8($user, $request),
@@ -184,24 +296,6 @@ class CandidateOnboardingController extends Controller
         $assessment->save();
     }
 
-    protected function saveStep4($user, Request $request): void
-    {
-        $assessment = $user->candidateAssessment()->firstOrNew([]);
-        $assessment->fill([
-            'personality_scores_json' => $request->input('personality_scores', []),
-        ]);
-        $assessment->save();
-    }
-
-    protected function saveStep5($user, Request $request): void
-    {
-        $assessment = $user->candidateAssessment()->firstOrNew([]);
-        $assessment->fill([
-            'temperament_type' => $request->input('temperament_type'),
-        ]);
-        $assessment->save();
-    }
-
     protected function saveStep6($user, Request $request): void
     {
         $preferences = $user->candidatePreferences()->firstOrNew([]);
@@ -270,12 +364,18 @@ class CandidateOnboardingController extends Controller
             if ($user->candidateAssessment->skill_score > 0) {
                 $percentage += 5;
             }
-            if ($user->candidateAssessment->personality_scores_json) {
-                $percentage += 5;
-            }
-            if ($user->candidateAssessment->temperament_type) {
-                $percentage += 5;
-            }
+        }
+
+        $personalityAnswerCount = $user->personalityAnswers()
+            ->whereHas('question', fn ($q) => $q->candidate())
+            ->count();
+
+        if ($personalityAnswerCount >= 12) {
+            $percentage += 10;
+        }
+
+        if ($personalityAnswerCount >= 24) {
+            $percentage += 10;
         }
 
         if ($user->candidatePreferences) {
@@ -352,5 +452,30 @@ class CandidateOnboardingController extends Controller
         $user->save();
 
         return redirect()->route('candidate.dashboard');
+    }
+
+    private function categoriesForStep(int $step): array
+    {
+        return self::STEP_CATEGORIES[$step] ?? [];
+    }
+
+    private function syncTemperamentFromProfile($user): void
+    {
+        $profile = $user->personalityProfile;
+
+        if (! $profile || ! $profile->temperament_type) {
+            return;
+        }
+
+        $discMap = [
+            'Decisive' => 'driver',
+            'Analytical' => 'analytical',
+            'Energetic' => 'expressive',
+            'Calm' => 'amiable',
+        ];
+
+        $assessment = $user->candidateAssessment()->firstOrNew([]);
+        $assessment->temperament_type = $discMap[$profile->temperament_type] ?? $profile->temperament_type;
+        $assessment->save();
     }
 }

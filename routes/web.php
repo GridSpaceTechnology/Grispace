@@ -20,6 +20,7 @@ use App\Http\Controllers\CandidateRecommendationController;
 use App\Http\Controllers\Employer\ATS\ApplicationNoteController;
 use App\Http\Controllers\Employer\ATS\ATSController;
 use App\Http\Controllers\Employer\ATS\CandidateRatingController;
+use App\Http\Controllers\Employer\EmployerOnboardingCultureController;
 use App\Http\Controllers\Employer\EmployerProfileController;
 use App\Http\Controllers\Employer\EmployerSetupController;
 use App\Http\Controllers\EmployerCultureController;
@@ -83,6 +84,15 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
 
     Route::post('/candidate/onboarding/step/{step}', [CandidateOnboardingController::class, 'store'])
         ->name('candidate.onboarding.store');
+
+    Route::get('/candidate/onboarding/assessment/{step}', [CandidateOnboardingController::class, 'showAssessment'])
+        ->name('candidate.onboarding.assessment');
+
+    Route::get('/candidate/onboarding/assessment/{step}/{question}', [CandidateOnboardingController::class, 'showAssessmentQuestion'])
+        ->name('candidate.onboarding.assessment.question');
+
+    Route::post('/candidate/onboarding/assessment/{step}/{question}/answer', [CandidateOnboardingController::class, 'saveAssessmentAnswer'])
+        ->name('candidate.onboarding.assessment.answer');
 
     Route::post('/candidate/onboarding/skip', [CandidateOnboardingController::class, 'skip'])
         ->name('candidate.onboarding.skip');
@@ -172,6 +182,15 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
     Route::get('/employer/setup', [EmployerSetupController::class, 'show'])
         ->name('employer.setup');
     Route::post('/employer/setup', [EmployerSetupController::class, 'store']);
+
+    Route::get('/employer/onboarding/culture', [EmployerOnboardingCultureController::class, 'start'])
+        ->name('employer.onboarding.culture');
+
+    Route::get('/employer/onboarding/culture/{question}', [EmployerOnboardingCultureController::class, 'showQuestion'])
+        ->name('employer.onboarding.culture.question');
+
+    Route::post('/employer/onboarding/culture/{question}/answer', [EmployerOnboardingCultureController::class, 'answer'])
+        ->name('employer.onboarding.culture.answer');
 
     Route::get('/employer/dashboard', [EmployerDashboardController::class, 'index'])
         ->name('employer.dashboard');

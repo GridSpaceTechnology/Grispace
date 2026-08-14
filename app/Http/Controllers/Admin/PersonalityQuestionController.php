@@ -26,9 +26,10 @@ class PersonalityQuestionController extends Controller
             'team_dynamics',
             'problem_solving',
             'leadership_initiative',
-            'environment_preference',
-            'motivation',
-            'temperament',
+            'work_environment_preference',
+            'motivation_drivers',
+            'temperament_indicators',
+            'organizational_culture',
         ];
 
         return view('admin.personality.questions.create', compact('categories'));
@@ -79,9 +80,10 @@ class PersonalityQuestionController extends Controller
             'team_dynamics',
             'problem_solving',
             'leadership_initiative',
-            'environment_preference',
-            'motivation',
-            'temperament',
+            'work_environment_preference',
+            'motivation_drivers',
+            'temperament_indicators',
+            'organizational_culture',
         ];
 
         return view('admin.personality.questions.edit', compact('question', 'categories'));

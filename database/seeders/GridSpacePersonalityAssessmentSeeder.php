@@ -38,13 +38,13 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
             }
         }
 
-        $this->command->info('Seeded 40 GridSpace Personality Assessment V2 questions with options.');
+        $this->command->info('Seeded 27 GridSpace Concise Personality & Matching Assessment questions with options.');
     }
 
     private function getQuestions(): array
     {
         return [
-            // WORK STYLE (Questions 1–5)
+            // WORK STYLE (Questions 1–3)
             [
                 'category' => 'work_style',
                 'question_text' => 'When starting a new project, what do you usually prefer?',
@@ -53,16 +53,6 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                     ['option_text' => 'A rough direction and flexibility', 'personality_dimension' => 'Adaptability', 'weight' => 3],
                     ['option_text' => 'Learning while doing', 'personality_dimension' => 'Initiative', 'weight' => 2],
                     ['option_text' => 'Team brainstorming first', 'personality_dimension' => 'Collaboration', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'work_style',
-                'question_text' => 'Which work environment feels most comfortable to you?',
-                'options' => [
-                    ['option_text' => 'Highly organized and structured', 'personality_dimension' => 'Stability', 'weight' => 3],
-                    ['option_text' => 'Flexible and creative', 'personality_dimension' => 'Adaptability', 'weight' => 3],
-                    ['option_text' => 'Fast-moving and energetic', 'personality_dimension' => 'Adaptability', 'weight' => 2],
-                    ['option_text' => 'Calm and predictable', 'personality_dimension' => 'Stability', 'weight' => 2],
                 ],
             ],
             [
@@ -77,16 +67,6 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
             ],
             [
                 'category' => 'work_style',
-                'question_text' => 'What describes your ideal work pace?',
-                'options' => [
-                    ['option_text' => 'Fast and dynamic', 'personality_dimension' => 'Adaptability', 'weight' => 3],
-                    ['option_text' => 'Balanced and steady', 'personality_dimension' => 'Stability', 'weight' => 2],
-                    ['option_text' => 'Deep focus with fewer interruptions', 'personality_dimension' => 'Analytical Thinking', 'weight' => 2],
-                    ['option_text' => 'Depends on the project', 'personality_dimension' => 'Adaptability', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'work_style',
                 'question_text' => 'When facing a difficult task, what do you do first?',
                 'options' => [
                     ['option_text' => 'Break it into steps', 'personality_dimension' => 'Analytical Thinking', 'weight' => 3],
@@ -96,7 +76,7 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                 ],
             ],
 
-            // COMMUNICATION STYLE (Questions 6–10)
+            // COMMUNICATION STYLE (Questions 4–6)
             [
                 'category' => 'communication_style',
                 'question_text' => 'How would people describe your communication style?',
@@ -119,26 +99,6 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
             ],
             [
                 'category' => 'communication_style',
-                'question_text' => 'In meetings, you are more likely to:',
-                'options' => [
-                    ['option_text' => 'Lead the discussion', 'personality_dimension' => 'Leadership', 'weight' => 3],
-                    ['option_text' => 'Contribute actively', 'personality_dimension' => 'Communication', 'weight' => 3],
-                    ['option_text' => 'Speak when necessary', 'personality_dimension' => 'Analytical Thinking', 'weight' => 2],
-                    ['option_text' => 'Observe and analyze first', 'personality_dimension' => 'Analytical Thinking', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'communication_style',
-                'question_text' => 'When explaining ideas, you prefer:',
-                'options' => [
-                    ['option_text' => 'Short and direct explanations', 'personality_dimension' => 'Communication', 'weight' => 3],
-                    ['option_text' => 'Stories and examples', 'personality_dimension' => 'Communication', 'weight' => 2],
-                    ['option_text' => 'Detailed breakdowns', 'personality_dimension' => 'Analytical Thinking', 'weight' => 3],
-                    ['option_text' => 'Visual demonstrations', 'personality_dimension' => 'Communication', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'communication_style',
                 'question_text' => 'How comfortable are you giving feedback?',
                 'options' => [
                     ['option_text' => 'Very comfortable', 'personality_dimension' => 'Communication', 'weight' => 3],
@@ -148,7 +108,7 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                 ],
             ],
 
-            // TEAM DYNAMICS (Questions 11–15)
+            // TEAM DYNAMICS (Questions 7–9)
             [
                 'category' => 'team_dynamics',
                 'question_text' => 'Which role do you naturally take in teams?',
@@ -179,28 +139,8 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                     ['option_text' => 'Adjust and compensate quietly', 'personality_dimension' => 'Stability', 'weight' => 2],
                 ],
             ],
-            [
-                'category' => 'team_dynamics',
-                'question_text' => 'Which statement sounds most like you?',
-                'options' => [
-                    ['option_text' => 'I enjoy working independently', 'personality_dimension' => 'Stability', 'weight' => 3],
-                    ['option_text' => 'I enjoy strong collaboration', 'personality_dimension' => 'Collaboration', 'weight' => 3],
-                    ['option_text' => 'I like a balance of both', 'personality_dimension' => 'Adaptability', 'weight' => 2],
-                    ['option_text' => 'It depends on the project', 'personality_dimension' => 'Adaptability', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'team_dynamics',
-                'question_text' => 'How important is team culture to you?',
-                'options' => [
-                    ['option_text' => 'Extremely important', 'personality_dimension' => 'Collaboration', 'weight' => 3],
-                    ['option_text' => 'Important', 'personality_dimension' => 'Collaboration', 'weight' => 2],
-                    ['option_text' => 'Somewhat important', 'personality_dimension' => 'Collaboration', 'weight' => 2],
-                    ['option_text' => 'Not a major factor', 'personality_dimension' => 'Stability', 'weight' => 2],
-                ],
-            ],
 
-            // PROBLEM SOLVING (Questions 16–20)
+            // PROBLEM SOLVING (Questions 10–12)
             [
                 'category' => 'problem_solving',
                 'question_text' => 'When solving problems, you usually:',
@@ -231,28 +171,8 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                     ['option_text' => 'Data-driven', 'personality_dimension' => 'Analytical Thinking', 'weight' => 2],
                 ],
             ],
-            [
-                'category' => 'problem_solving',
-                'question_text' => 'When pressure increases, you tend to:',
-                'options' => [
-                    ['option_text' => 'Become more focused', 'personality_dimension' => 'Analytical Thinking', 'weight' => 3],
-                    ['option_text' => 'Feel energized', 'personality_dimension' => 'Adaptability', 'weight' => 2],
-                    ['option_text' => 'Become cautious', 'personality_dimension' => 'Stability', 'weight' => 2],
-                    ['option_text' => 'Seek support from others', 'personality_dimension' => 'Collaboration', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'problem_solving',
-                'question_text' => 'How comfortable are you with risk?',
-                'options' => [
-                    ['option_text' => 'Very comfortable', 'personality_dimension' => 'Initiative', 'weight' => 3],
-                    ['option_text' => 'Moderately comfortable', 'personality_dimension' => 'Adaptability', 'weight' => 2],
-                    ['option_text' => 'Only calculated risks', 'personality_dimension' => 'Analytical Thinking', 'weight' => 3],
-                    ['option_text' => 'Prefer stability', 'personality_dimension' => 'Stability', 'weight' => 2],
-                ],
-            ],
 
-            // LEADERSHIP & INITIATIVE (Questions 21–25)
+            // LEADERSHIP & INITIATIVE (Questions 13–15)
             [
                 'category' => 'leadership_initiative',
                 'question_text' => 'When you notice a problem at work, you usually:',
@@ -275,16 +195,6 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
             ],
             [
                 'category' => 'leadership_initiative',
-                'question_text' => 'What motivates you most in projects?',
-                'options' => [
-                    ['option_text' => 'Achieving goals', 'personality_dimension' => 'Initiative', 'weight' => 3],
-                    ['option_text' => 'Recognition', 'personality_dimension' => 'Communication', 'weight' => 2],
-                    ['option_text' => 'Learning and growth', 'personality_dimension' => 'Growth Orientation', 'weight' => 2],
-                    ['option_text' => 'Team success', 'personality_dimension' => 'Collaboration', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'leadership_initiative',
                 'question_text' => 'When working without supervision, you:',
                 'options' => [
                     ['option_text' => 'Stay highly productive', 'personality_dimension' => 'Initiative', 'weight' => 3],
@@ -293,20 +203,10 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                     ['option_text' => 'Work best with deadlines', 'personality_dimension' => 'Adaptability', 'weight' => 2],
                 ],
             ],
-            [
-                'category' => 'leadership_initiative',
-                'question_text' => 'Which sounds most like you?',
-                'options' => [
-                    ['option_text' => 'I enjoy making decisions', 'personality_dimension' => 'Leadership', 'weight' => 3],
-                    ['option_text' => 'I prefer collaboration before decisions', 'personality_dimension' => 'Collaboration', 'weight' => 2],
-                    ['option_text' => 'I prefer clear instructions', 'personality_dimension' => 'Stability', 'weight' => 2],
-                    ['option_text' => 'I avoid unnecessary responsibility', 'personality_dimension' => 'Stability', 'weight' => 2],
-                ],
-            ],
 
-            // WORK ENVIRONMENT PREFERENCE (Questions 26–30)
+            // WORK ENVIRONMENT PREFERENCE (Questions 16–18)
             [
-                'category' => 'environment_preference',
+                'category' => 'work_environment_preference',
                 'question_text' => 'What type of company environment excites you most?',
                 'options' => [
                     ['option_text' => 'Startup', 'personality_dimension' => 'Adaptability', 'weight' => 3],
@@ -316,7 +216,7 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'environment_preference',
+                'category' => 'work_environment_preference',
                 'question_text' => 'What work setup do you prefer?',
                 'options' => [
                     ['option_text' => 'Fully remote', 'personality_dimension' => 'Adaptability', 'weight' => 2],
@@ -326,7 +226,7 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'environment_preference',
+                'category' => 'work_environment_preference',
                 'question_text' => 'What type of management style do you prefer?',
                 'options' => [
                     ['option_text' => 'Hands-on guidance', 'personality_dimension' => 'Collaboration', 'weight' => 2],
@@ -335,30 +235,10 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                     ['option_text' => 'Structured supervision', 'personality_dimension' => 'Stability', 'weight' => 2],
                 ],
             ],
-            [
-                'category' => 'environment_preference',
-                'question_text' => 'Which environment helps you perform best?',
-                'options' => [
-                    ['option_text' => 'Fast-paced', 'personality_dimension' => 'Adaptability', 'weight' => 3],
-                    ['option_text' => 'Highly organized', 'personality_dimension' => 'Stability', 'weight' => 3],
-                    ['option_text' => 'Creative and flexible', 'personality_dimension' => 'Adaptability', 'weight' => 2],
-                    ['option_text' => 'Calm and predictable', 'personality_dimension' => 'Stability', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'environment_preference',
-                'question_text' => 'How important is career growth opportunity?',
-                'options' => [
-                    ['option_text' => 'Extremely important', 'personality_dimension' => 'Growth Orientation', 'weight' => 3],
-                    ['option_text' => 'Important', 'personality_dimension' => 'Growth Orientation', 'weight' => 2],
-                    ['option_text' => 'Somewhat important', 'personality_dimension' => 'Growth Orientation', 'weight' => 2],
-                    ['option_text' => 'Less important than stability', 'personality_dimension' => 'Stability', 'weight' => 2],
-                ],
-            ],
 
-            // MOTIVATION DRIVERS (Questions 31–35)
+            // MOTIVATION DRIVERS (Questions 19–21)
             [
-                'category' => 'motivation',
+                'category' => 'motivation_drivers',
                 'question_text' => 'What motivates you most professionally?',
                 'options' => [
                     ['option_text' => 'Financial growth', 'personality_dimension' => 'Growth Orientation', 'weight' => 3],
@@ -368,7 +248,7 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'motivation',
+                'category' => 'motivation_drivers',
                 'question_text' => 'What makes you stay long-term at a company?',
                 'options' => [
                     ['option_text' => 'Good compensation', 'personality_dimension' => 'Growth Orientation', 'weight' => 2],
@@ -378,17 +258,7 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'motivation',
-                'question_text' => 'Which achievement would make you happiest?',
-                'options' => [
-                    ['option_text' => 'Promotion', 'personality_dimension' => 'Growth Orientation', 'weight' => 3],
-                    ['option_text' => 'Building something impactful', 'personality_dimension' => 'Growth Orientation', 'weight' => 2],
-                    ['option_text' => 'Recognition from peers', 'personality_dimension' => 'Communication', 'weight' => 2],
-                    ['option_text' => 'Personal growth', 'personality_dimension' => 'Growth Orientation', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'motivation',
+                'category' => 'motivation_drivers',
                 'question_text' => 'What matters most when choosing a new role?',
                 'options' => [
                     ['option_text' => 'Salary', 'personality_dimension' => 'Growth Orientation', 'weight' => 3],
@@ -397,20 +267,10 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                     ['option_text' => 'Flexibility', 'personality_dimension' => 'Adaptability', 'weight' => 2],
                 ],
             ],
-            [
-                'category' => 'motivation',
-                'question_text' => 'Which statement sounds most like you?',
-                'options' => [
-                    ['option_text' => 'I enjoy competition', 'personality_dimension' => 'Initiative', 'weight' => 3],
-                    ['option_text' => 'I enjoy collaboration', 'personality_dimension' => 'Collaboration', 'weight' => 3],
-                    ['option_text' => 'I value stability', 'personality_dimension' => 'Stability', 'weight' => 3],
-                    ['option_text' => 'I value freedom', 'personality_dimension' => 'Adaptability', 'weight' => 2],
-                ],
-            ],
 
-            // TEMPERAMENT INDICATORS (Questions 36–40)
+            // TEMPERAMENT INDICATORS (Questions 22–24)
             [
-                'category' => 'temperament',
+                'category' => 'temperament_indicators',
                 'question_text' => 'How do you usually respond under pressure?',
                 'options' => [
                     ['option_text' => 'Take charge quickly', 'personality_dimension' => 'Leadership', 'weight' => 3],
@@ -420,7 +280,7 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'temperament',
+                'category' => 'temperament_indicators',
                 'question_text' => 'What describes your natural energy level at work?',
                 'options' => [
                     ['option_text' => 'High-energy and expressive', 'personality_dimension' => 'Communication', 'weight' => 3],
@@ -430,17 +290,7 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'temperament',
-                'question_text' => 'How do you usually make decisions?',
-                'options' => [
-                    ['option_text' => 'Quickly and confidently', 'personality_dimension' => 'Leadership', 'weight' => 3],
-                    ['option_text' => 'Carefully and logically', 'personality_dimension' => 'Analytical Thinking', 'weight' => 3],
-                    ['option_text' => 'Based on relationships', 'personality_dimension' => 'Collaboration', 'weight' => 2],
-                    ['option_text' => 'Based on experience', 'personality_dimension' => 'Analytical Thinking', 'weight' => 2],
-                ],
-            ],
-            [
-                'category' => 'temperament',
+                'category' => 'temperament_indicators',
                 'question_text' => 'What role do you naturally play during stressful situations?',
                 'options' => [
                     ['option_text' => 'Leader', 'personality_dimension' => 'Leadership', 'weight' => 3],
@@ -449,14 +299,36 @@ class GridSpacePersonalityAssessmentSeeder extends Seeder
                     ['option_text' => 'Supporter', 'personality_dimension' => 'Collaboration', 'weight' => 2],
                 ],
             ],
+
+            // ORGANIZATIONAL CULTURE (Employer Questions 25–27)
             [
-                'category' => 'temperament',
-                'question_text' => 'Which best describes your personality at work?',
+                'category' => 'organizational_culture',
+                'question_text' => 'What kind of work environment best describes your company?',
                 'options' => [
-                    ['option_text' => 'Energetic', 'personality_dimension' => 'Communication', 'weight' => 3],
-                    ['option_text' => 'Calm', 'personality_dimension' => 'Stability', 'weight' => 3],
-                    ['option_text' => 'Analytical', 'personality_dimension' => 'Analytical Thinking', 'weight' => 3],
-                    ['option_text' => 'Ambitious', 'personality_dimension' => 'Initiative', 'weight' => 2],
+                    ['option_text' => 'Fast-paced startup', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                    ['option_text' => 'Structured corporate', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                    ['option_text' => 'Creative and flexible', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                    ['option_text' => 'Mission-driven collaborative', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                ],
+            ],
+            [
+                'category' => 'organizational_culture',
+                'question_text' => 'What type of employees perform best in your organization?',
+                'options' => [
+                    ['option_text' => 'Independent self-starters', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                    ['option_text' => 'Team-oriented collaborators', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                    ['option_text' => 'Highly analytical thinkers', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                    ['option_text' => 'Process-driven professionals', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                ],
+            ],
+            [
+                'category' => 'organizational_culture',
+                'question_text' => 'What communication style works best in your workplace?',
+                'options' => [
+                    ['option_text' => 'Direct and fast', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                    ['option_text' => 'Diplomatic and thoughtful', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                    ['option_text' => 'Collaborative and open', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
+                    ['option_text' => 'Structured and professional', 'personality_dimension' => 'Organizational Culture', 'weight' => 3],
                 ],
             ],
         ];

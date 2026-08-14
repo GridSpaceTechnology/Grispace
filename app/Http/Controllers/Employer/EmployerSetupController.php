@@ -79,9 +79,7 @@ class EmployerSetupController extends Controller
             $companyData
         );
 
-        $user->update(['onboarding_completed' => true]);
-
-        return redirect()->route('employer.dashboard')
-            ->with('success', 'Your company profile has been set up successfully!');
+        return redirect()->route('employer.onboarding.culture')
+            ->with('success', 'Your company profile has been created. Let\'s define your company culture.');
     }
 }

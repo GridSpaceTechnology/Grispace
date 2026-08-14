@@ -11,6 +11,7 @@ class PersonalityAnswer extends Model
         'candidate_id',
         'question_id',
         'selected_option_id',
+        'section',
     ];
 
     public function candidate(): BelongsTo
