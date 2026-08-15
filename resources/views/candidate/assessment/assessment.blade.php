@@ -66,10 +66,12 @@
                             </a>
                         @endisset
                     </div>
-                    <a href="{{ route('candidate.personality.skip') }}"
-                       class="text-sm text-slate-400 hover:text-slate-600 transition-colors">
-                        Save & continue later
-                    </a>
+                    <form method="POST" action="{{ route('candidate.personality.skip') }}">
+                        @csrf
+                        <button type="submit" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">
+                            Save & continue later
+                        </button>
+                    </form>
                 </div>
             </div>
         @else
@@ -112,10 +114,12 @@
                         </button>
                     </form>
                     <div class="mt-4">
-                        <a href="{{ route('candidate.personality.skip') }}"
-                           class="text-sm text-slate-400 hover:text-slate-600">
-                            Skip for now
-                        </a>
+                        <form method="POST" action="{{ route('candidate.personality.skip') }}">
+                            @csrf
+                            <button type="submit" class="text-sm text-slate-400 hover:text-slate-600">
+                                Skip for now
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

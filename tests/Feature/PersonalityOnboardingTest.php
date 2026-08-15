@@ -106,6 +106,25 @@ test('candidate completes step 5 assessment and generates a personality profile'
         ->toBeIn(['analytical', 'driver', 'expressive', 'amiable']);
 });
 
+test('candidate can save and continue later from the personality assessment', function () {
+    $user = User::factory()->create(['role' => 'candidate', 'onboarding_completed' => false]);
+
+    $this->actingAs($user)
+        ->post(route('candidate.personality.skip'))
+        ->assertRedirect(route('candidate.dashboard'));
+
+    expect($user->fresh()->personalityProfile)->not->toBeNull();
+    expect($user->fresh()->personalityProfile->assessment_completed)->toBeFalse();
+});
+
+test('candidate cannot reach the skip endpoint via a GET request', function () {
+    $user = User::factory()->create(['role' => 'candidate']);
+
+    $this->actingAs($user)
+        ->get(route('candidate.personality.skip'))
+        ->assertNotFound();
+});
+
 test('candidate assessment answers are tagged with their section', function () {
     $user = User::factory()->create(['role' => 'candidate', 'onboarding_completed' => false]);
 
