@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('personality_question_options', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('question_id')->constrained('personality_questions')->cascadeOnDelete();
+            $table->unsignedBigInteger('question_id');
             $table->string('option_text');
             $table->string('signal_key');
             $table->integer('signal_value')->default(1);

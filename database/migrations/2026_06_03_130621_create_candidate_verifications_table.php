@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('candidate_verifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('candidate_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('verification_type_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('verification_type_id');
             $table->string('status')->default('pending')->index();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('verified_at')->nullable();
@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['candidate_id', 'verification_type_id']);
+            $table->index(['verification_type_id']);
             $table->index(['status', 'created_at']);
         });
     }

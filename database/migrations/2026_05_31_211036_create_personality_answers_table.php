@@ -11,12 +11,13 @@ return new class extends Migration
         Schema::create('personality_answers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('candidate_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('question_id')->constrained('personality_questions')->cascadeOnDelete();
-            $table->foreignId('selected_option_id')->constrained('personality_question_options')->cascadeOnDelete();
+            $table->unsignedBigInteger('question_id');
+            $table->unsignedBigInteger('selected_option_id');
             $table->timestamps();
 
             $table->index('candidate_id');
             $table->index('question_id');
+            $table->index('selected_option_id');
             $table->unique(['candidate_id', 'question_id']);
         });
     }
