@@ -28,13 +28,21 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(
-            auth()->user()->onboarding_completed
-                ? '/dashboard'
-                : (auth()->user()->role === 'candidate'
-                  ? '/candidate/onboarding'
-                  : '/employer/onboarding')
-        );
+        return redirect()->intended(function () {
+            $user = auth()->user();
+
+            if ($user->role === 'admin') {
+                return '/dashboard';
+            }
+
+            if ($user->onboarding_completed) {
+                return '/dashboard';
+            }
+
+            return $user->role === 'candidate'
+                ? '/candidate/onboarding'
+                : '/employer/onboarding';
+        });
     }
 
     /**
