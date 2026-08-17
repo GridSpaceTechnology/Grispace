@@ -108,20 +108,22 @@
                 }">
                     <div class="space-y-3">
                         <template x-for="(edu, index) in education" :key="index">
-                            <div class="flex gap-3 items-center">
+                            <div class="grid grid-cols-2 gap-3">
                                 <input type="text" :name="`education[${index}][institution]`" x-model="edu.institution" placeholder="Institution"
-                                       class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                       class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <input type="text" :name="`education[${index}][qualification]`" x-model="edu.qualification" placeholder="Qualification"
-                                       class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <input type="number" :name="`education[${index}][year_completed]`" x-model="edu.year_completed" placeholder="Year"
-                                       class="w-28 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <button type="button" x-on:click="removeEducation(index)" x-show="education.length > 1"
-                                        class="shrink-0 text-gray-400 hover:text-red-600 transition-colors" aria-label="Remove education">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="3 6 5 6 21 6"/>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                    </svg>
-                                </button>
+                                       class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <div class="col-span-2 flex gap-3 items-center">
+                                    <input type="number" :name="`education[${index}][year_completed]`" x-model="edu.year_completed" placeholder="Year"
+                                           class="w-28 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <button type="button" x-on:click="removeEducation(index)" x-show="education.length > 1"
+                                            class="shrink-0 text-gray-400 hover:text-red-600 transition-colors" aria-label="Remove education">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </template>
                     </div>

@@ -100,7 +100,7 @@
 .shadow-indigo-600 { --tw-shadow-color: #eb5333 !important; }
 .shadow-lg-indigo-500\/25 { --tw-shadow-color: rgb(235 83 51 / 0.25) !important; }
 
-/* Gradient */
+/* Brand gradient utility (kept for backward compat) */
 .bg-gradient-to-r-from-secondary-to-primary {
-    background: linear-gradient(to right, #052e5c, #eb5333);
+    background: #052e5c;
 }

@@ -30,7 +30,7 @@
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
     x-init="setTimeout(() => { dismissed = true; @this.call('dismiss'); }, 5000)"
-    class="mb-6 bg-gradient-to-r from-brand-secondary to-brand-primary rounded-xl shadow-lg overflow-hidden"
+    class="mb-6 bg-brand-secondary rounded-xl shadow-lg overflow-hidden"
 >
     <div class="p-6">
         <div class="flex items-start justify-between">
