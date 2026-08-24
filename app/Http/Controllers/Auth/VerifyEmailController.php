@@ -22,6 +22,13 @@ class VerifyEmailController extends Controller
             event(new Verified($request->user()));
         }
 
+        if ($request->user()->isSuspendedForUnverifiedEmail()) {
+            $request->user()->forceFill([
+                'is_suspended' => false,
+                'suspension_reason' => null,
+            ])->save();
+        }
+
         return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
     }
 }

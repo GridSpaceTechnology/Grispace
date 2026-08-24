@@ -7,6 +7,8 @@
             <x-welcome-banner type="employer" />
         @endif
 
+        <x-verification-banner />
+
         <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">Employer Dashboard</h1>

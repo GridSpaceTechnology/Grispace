@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Notifications\QueuedVerifyEmail;
+use Carbon\CarbonInterface;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -10,9 +13,11 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
+
+    final public const SUSPENSION_REASON_UNVERIFIED_EMAIL = 'unverified_email';
 
     protected $fillable = [
         'name',
@@ -22,6 +27,7 @@ class User extends Authenticatable
         'welcome_dismissed_at',
         'onboarding_completed',
         'profile_photo_path',
+        'suspension_reason',
     ];
 
     protected $hidden = [
@@ -217,6 +223,37 @@ class User extends Authenticatable
     public function hasVerifiedEmail(): bool
     {
         return ! is_null($this->email_verified_at);
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new QueuedVerifyEmail);
+    }
+
+    public function isSuspendedForUnverifiedEmail(): bool
+    {
+        return $this->is_suspended
+            && $this->suspension_reason === self::SUSPENSION_REASON_UNVERIFIED_EMAIL;
+    }
+
+    public function deactivationDeadline(): ?CarbonInterface
+    {
+        if ($this->hasVerifiedEmail()) {
+            return null;
+        }
+
+        return $this->created_at?->addDays((int) config('auth.email_verification.grace_days', 14));
+    }
+
+    public function daysUntilDeactivation(): ?int
+    {
+        $deadline = $this->deactivationDeadline();
+
+        if (is_null($deadline)) {
+            return null;
+        }
+
+        return max(0, now()->diffInDays($deadline, false));
     }
 
     public function hasVerifiedPhone(): bool

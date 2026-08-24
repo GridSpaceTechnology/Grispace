@@ -26,6 +26,14 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = auth()->user();
+
+        if ($user->isSuspendedForUnverifiedEmail()) {
+            return redirect()
+                ->route('verification.notice')
+                ->with('suspended', __('Your account was deactivated because your email address was not verified. Please verify your email below to reactivate it.'));
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(function () {

@@ -7,6 +7,8 @@
             <x-welcome-banner type="candidate" />
         @endif
 
+        <x-verification-banner />
+
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-slate-900">Candidate Dashboard</h1>
             <p class="text-slate-600 mt-1">Track your applications and find new opportunities</p>

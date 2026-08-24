@@ -103,6 +103,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Email Verification Grace Period
+    |--------------------------------------------------------------------------
+    |
+    | New accounts may be used without verifying their email address, but
+    | accounts that remain unverified for this number of days are
+    | automatically deactivated by the "users:suspend-unverified" command.
+    | Users can reactivate their account at any time by verifying
+    | their email address.
+    |
+    */
+
+    'email_verification' => [
+        'grace_days' => env('AUTH_VERIFICATION_GRACE_DAYS', 14),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Password Confirmation Timeout
     |--------------------------------------------------------------------------
     |
