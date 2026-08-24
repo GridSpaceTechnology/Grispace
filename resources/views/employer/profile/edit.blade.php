@@ -132,6 +132,25 @@
             </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-lg font-semibold text-slate-900 mb-6">Candidate Messaging</h2>
+
+                <label for="allow_candidate_messages" class="flex items-start justify-between gap-4 cursor-pointer">
+                    <span>
+                        <span class="block font-medium text-slate-700">Allow candidates to message you</span>
+                        <span class="block mt-1 text-sm text-slate-500">When enabled, candidates can start conversations with you from your company profile and job listings. Existing conversations are not affected.</span>
+                    </span>
+                    <span class="relative inline-flex flex-shrink-0 items-center mt-0.5">
+                        <input type="checkbox" name="allow_candidate_messages" id="allow_candidate_messages"
+                               value="1"
+                               class="peer sr-only"
+                               @checked(old('allow_candidate_messages', $company?->allow_candidate_messages ?? true))>
+                        <span class="h-6 w-11 rounded-full bg-slate-200 transition-colors peer-checked:bg-emerald-500"></span>
+                        <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 translate-x-0 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></span>
+                    </span>
+                </label>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <h2 class="text-lg font-semibold text-slate-900 mb-6">Social Links</h2>
                 
                 <div class="space-y-6">

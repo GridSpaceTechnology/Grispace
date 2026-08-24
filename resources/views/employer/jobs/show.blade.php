@@ -12,16 +12,18 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2">
+        <div>
+            <div>
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                     <div class="flex items-start justify-between mb-4">
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900">{{ $job->title }}</h1>
                             <p class="text-gray-600 mt-1">{{ $job->role }}</p>
                         </div>
-                        <span class="px-3 py-1 rounded-full text-sm font-medium 
-                            @if($job->status === 'active') bg-green-100 text-green-800
+                        <span class="px-3 py-1 rounded-full text-sm font-medium
+                            @if($job->status === 'open') bg-green-100 text-green-800
+                            @elseif($job->status === 'paused') bg-yellow-100 text-yellow-800
+                            @elseif($job->status === 'closed' || $job->status === 'filled') bg-red-100 text-red-800
                             @else bg-gray-100 text-gray-800 @endif
                         ">
                             {{ ucfirst($job->status) }}
@@ -50,11 +52,11 @@
                         </span>
                     </div>
 
-                    @if($job->salary_min || $job->salary_max)
+                    @if($job->salaryLabel())
                         <div class="bg-green-50 rounded-lg p-4 mb-6">
                             <span class="text-sm text-green-800 font-medium">Salary Range:</span>
                             <span class="text-green-900">
-                                ${{ number_format($job->salary_min ?? 0) }} - ${{ number_format($job->salary_max ?? 0) }}
+                                {{ $job->salaryLabel() }}
                             </span>
                         </div>
                     @endif
@@ -67,45 +69,42 @@
                             <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-2">Responsibilities</h3>
                             <p class="text-gray-600 whitespace-pre-line">{{ $job->responsibilities }}</p>
                         @endif
+
+                        @if($job->requirements)
+                            <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-2">Requirements</h3>
+                            <p class="text-gray-600 whitespace-pre-line">{{ $job->requirements }}</p>
+                        @endif
+
+                        @if($job->benefits)
+                            <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-2">Benefits</h3>
+                            <p class="text-gray-600 whitespace-pre-line">{{ $job->benefits }}</p>
+                        @endif
+
+                        @if(is_array($job->personality_preferences_json) && count($job->personality_preferences_json) > 0)
+                            <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-2">Candidate Preferences</h3>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($job->personality_preferences_json as $preference)
+                                    <span class="px-3 py-1 bg-purple-50 rounded-full text-sm text-purple-700">
+                                        {{ is_array($preference) ? implode(': ', $preference) : $preference }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-1">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Job Details</h2>
-                    
-                    <dl class="space-y-4">
-                        <div>
-                            <dt class="text-sm text-gray-500">Posted</dt>
-                            <dd class="text-sm font-medium text-gray-900">{{ $job->created_at->diffForHumans() }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm text-gray-500">Min. Experience</dt>
-                            <dd class="text-sm font-medium text-gray-900">{{ $job->minimum_experience ?? 0 }} years</dd>
-                        </div>
-                        @if($job->required_skills_json)
-                        <div>
-                            <dt class="text-sm text-gray-500">Required Skills</dt>
-                            <dd class="mt-2 flex flex-wrap gap-2">
-                                @foreach($job->required_skills_json as $skill)
-                                    <span class="px-2 py-1 bg-gray-100 rounded text-xs text-gray-700">{{ $skill }}</span>
-                                @endforeach
-                            </dd>
-                        </div>
-                        @endif
-                    </dl>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-gray-900">
                             Applications ({{ $job->applications->count() }})
                         </h2>
-                        <a href="{{ route('employer.jobs.candidates', ['job' => $job->id]) }}" 
-                           class="text-sm text-indigo-600 hover:text-indigo-700">
-                            View Matches →
-                        </a>
+                        @if(auth()->user()?->isEmployer())
+                            <a href="{{ route('employer.jobs.candidates', ['job' => $job->id]) }}"
+                               class="text-sm text-indigo-600 hover:text-indigo-700">
+                                View Matches →
+                            </a>
+                        @endif
                     </div>
                     
                     @if($job->applications->isEmpty())

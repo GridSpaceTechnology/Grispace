@@ -72,8 +72,8 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                            @if($job->status === 'active') bg-green-100 text-green-800
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            @if($job->status === 'open' || $job->status === 'active') bg-green-100 text-green-800
                                             @elseif($job->status === 'paused') bg-yellow-100 text-yellow-800
                                             @else bg-gray-100 text-gray-800 @endif
                                         ">
@@ -84,9 +84,24 @@
                                         {{ $job->created_at->diffForHumans() }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                        <a href="{{ route('employer.jobs.show', ['job' => $job->id]) }}" class="text-indigo-600 hover:text-indigo-900">
-                                            View
-                                        </a>
+                                        <div class="flex items-center justify-end gap-3">
+                                            <a href="{{ route('employer.jobs.show', ['job' => $job->id]) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                View
+                                            </a>
+                                            <a href="{{ route('employer.jobs.edit', ['job' => $job->id]) }}" class="text-brand-primary hover:text-brand-primary-hover">
+                                                Edit
+                                            </a>
+                                            @if(in_array($job->status, ['filled', 'closed', 'paused', 'draft']))
+                                                <form method="POST" action="{{ route('employer.jobs.destroy', ['job' => $job->id]) }}"
+                                                      onsubmit="return confirm('Permanently delete this job? Applications and matches for it will be removed. This cannot be undone.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

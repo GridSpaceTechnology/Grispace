@@ -26,7 +26,30 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'phone_number' => [
+                'nullable',
+                'string',
+                'max:20',
+                'regex:/^\+?[0-9][0-9\s\-()]{5,19}$/',
+                Rule::unique(User::class, 'phone_number')->ignore($this->user()->id),
+            ],
             'profile_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('phone_number')) {
+            return;
+        }
+
+        $this->merge([
+            'phone_number' => $this->filled('phone_number')
+                ? preg_replace('/[\s\-()]/', '', trim((string) $this->input('phone_number')))
+                : null,
+        ]);
     }
 }

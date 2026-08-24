@@ -6,6 +6,17 @@
     <p class="text-gray-600 mt-1">Manage job listings</p>
 </div>
 
+@if(session('success'))
+    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+        {{ session('success') }}
+    </div>
+@endif
+@if(session('error'))
+    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+        {{ session('error') }}
+    </div>
+@endif
+
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -37,12 +48,8 @@
                             {{ $job->work_preference ?? 'Not specified' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($job->salary_min && $job->salary_max)
-                                ${{ number_format($job->salary_min) }} - ${{ number_format($job->salary_max) }}
-                            @elseif($job->salary_min)
-                                From ${{ number_format($job->salary_min) }}
-                            @elseif($job->salary_max)
-                                Up to ${{ number_format($job->salary_max) }}
+                            @if($job->salaryLabel())
+                                {{ $job->salaryLabel() }}
                             @else
                                 Not specified
                             @endif
@@ -71,12 +78,28 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex items-center gap-2">
-                                <button class="text-indigo-600 hover:text-indigo-900">View</button>
+                            <div class="flex items-center gap-3">
+                                <a href="{{ route('admin.jobs.show', $job) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                <a href="{{ route('admin.jobs.edit', $job) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
                                 @if($job->status === 'open')
-                                    <button class="text-yellow-600 hover:text-yellow-900 ml-2">Deactivate</button>
+                                    <form method="POST" action="{{ route('admin.jobs.toggle-status', $job) }}"
+                                          onsubmit="return confirm('Deactivate this job? It will no longer appear in search results.');">
+                                        @csrf
+                                        <button type="submit" class="text-yellow-600 hover:text-yellow-900">Deactivate</button>
+                                    </form>
+                                @elseif(in_array($job->status, ['paused', 'draft', 'closed']))
+                                    <form method="POST" action="{{ route('admin.jobs.toggle-status', $job) }}"
+                                          onsubmit="return confirm('Reactivate this job?');">
+                                        @csrf
+                                        <button type="submit" class="text-emerald-600 hover:text-emerald-900">Activate</button>
+                                    </form>
                                 @endif
-                                <button class="text-red-600 hover:text-red-900 ml-2">Delete</button>
+                                <form method="POST" action="{{ route('admin.jobs.destroy', $job) }}"
+                                      onsubmit="return confirm('Permanently delete this job? This cannot be undone.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                </form>
                             </div>
                         </td>
                     </tr>

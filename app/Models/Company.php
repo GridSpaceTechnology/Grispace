@@ -31,6 +31,7 @@ class Company extends Model
         'twitter_url',
         'culture_description',
         'work_model',
+        'allow_candidate_messages',
     ];
 
     protected function casts(): array
@@ -40,6 +41,7 @@ class Company extends Model
             'benefits_json' => 'array',
             'is_verified' => 'boolean',
             'founded_year' => 'integer',
+            'allow_candidate_messages' => 'boolean',
         ];
     }
 
@@ -50,7 +52,7 @@ class Company extends Model
 
     public function jobs(): HasMany
     {
-        return $this->hasMany(Job::class, 'employer_id');
+        return $this->hasMany(Job::class, 'employer_id', 'user_id');
     }
 
     public function getRouteKeyName(): string

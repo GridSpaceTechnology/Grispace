@@ -47,13 +47,15 @@
                         <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                             <div class="flex-1">
                                 <div class="flex items-start gap-4">
-                                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <span class="text-indigo-600 font-semibold text-lg">{{ substr($job->employer->name ?? 'C', 0, 1) }}</span>
-                                    </div>
+                                <x-company-logo :company="$job->company" :fallback="$job->employer->name ?? 'Company'" size="md"/>
                                     <div>
                                         <h2 class="text-xl font-semibold text-gray-900">{{ $job->title }}</h2>
                                         <p class="text-gray-600">
-                                            {{ $job->employer->name ?? 'Company' }}
+                                            @if($job->company)
+                                                <a href="{{ route('employers.show', $job->company) }}" class="hover:text-brand-primary hover:underline">{{ $job->company->name }}</a>
+                                            @else
+                                                {{ $job->employer->name ?? 'Company' }}
+                                            @endif
                                             @if($job->company?->is_verified)
                                                 <svg class="w-4 h-4 text-blue-500 inline" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -93,10 +95,8 @@
                                     @if($job->role)
                                         <x-badge variant="indigo">{{ $job->role }}</x-badge>
                                     @endif
-                                    @if($job->salary_min || $job->salary_max)
-                                        <x-badge variant="success">
-                                            ${{ number_format($job->salary_min ?? 0) }} - ${{ number_format($job->salary_max ?? 0) }}
-                                        </x-badge>
+                                    @if($job->salaryLabel())
+                                        <x-badge variant="success">{{ $job->salaryLabel() }}</x-badge>
                                     @endif
                                     @if($job->industry)
                                         <x-badge>{{ $job->industry }}</x-badge>

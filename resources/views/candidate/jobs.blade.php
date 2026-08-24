@@ -73,10 +73,8 @@
 
                                 <div class="mt-4 flex flex-wrap gap-2">
                                     <x-badge variant="indigo">{{ $match['job']->role }}</x-badge>
-                                    @if($match['job']->salary_min || $match['job']->salary_max)
-                                        <x-badge variant="success">
-                                            ${{ number_format($match['job']->salary_min ?? 0) }} - ${{ number_format($match['job']->salary_max ?? 0) }}
-                                        </x-badge>
+                                    @if($match['job']->salaryLabel())
+                                        <x-badge variant="success">{{ $match['job']->salaryLabel() }}</x-badge>
                                     @endif
                                     @if($match['job']->industry)
                                         <x-badge>{{ $match['job']->industry }}</x-badge>

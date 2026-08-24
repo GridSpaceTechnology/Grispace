@@ -17,17 +17,26 @@ class Job extends Model
         'slug',
         'role',
         'location',
+        'location_country',
         'description',
+        'responsibilities',
+        'requirements',
+        'benefits',
         'industry',
         'employment_type',
         'salary_min',
         'salary_max',
+        'salary_currency',
+        'salary_period',
+        'salary_visible',
         'work_preference',
         'minimum_experience',
+        'experience_level',
         'required_skills_json',
         'personality_preferences_json',
         'temperament_preference',
         'status',
+        'published_at',
     ];
 
     protected function casts(): array
@@ -35,8 +44,10 @@ class Job extends Model
         return [
             'salary_min' => 'decimal:2',
             'salary_max' => 'decimal:2',
+            'salary_visible' => 'boolean',
             'required_skills_json' => 'array',
             'personality_preferences_json' => 'array',
+            'published_at' => 'datetime',
         ];
     }
 
@@ -113,5 +124,48 @@ class Job extends Model
     public function isClosed(): bool
     {
         return in_array($this->status, ['closed', 'filled']);
+    }
+
+    public static function supportedCurrencies(): array
+    {
+        return array_keys(config('currencies.currencies', []));
+    }
+
+    public static function salaryPeriods(): array
+    {
+        return config('currencies.salary_periods', []);
+    }
+
+    public function currencySymbol(): string
+    {
+        return config("currencies.currencies.{$this->salary_currency}.symbol", '');
+    }
+
+    public function hasSalary(): bool
+    {
+        return (float) ($this->salary_min ?? 0) > 0 || (float) ($this->salary_max ?? 0) > 0;
+    }
+
+    public function salaryLabel(): ?string
+    {
+        if (! $this->hasSalary()) {
+            return null;
+        }
+
+        $symbol = $this->currencySymbol();
+        $min = $this->salary_min !== null ? number_format((float) $this->salary_min) : null;
+        $max = $this->salary_max !== null ? number_format((float) $this->salary_max) : null;
+
+        if ($min && $max) {
+            $range = "{$symbol}{$min} – {$symbol}{$max}";
+        } else {
+            $range = $symbol.($max ?: $min);
+        }
+
+        $period = self::salaryPeriods()[$this->salary_period] ?? null;
+
+        return $period !== null
+            ? "{$range} / {$period}"
+            : $range;
     }
 }

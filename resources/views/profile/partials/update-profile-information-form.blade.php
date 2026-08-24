@@ -75,6 +75,23 @@
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
         </div>
 
+        <div>
+            <x-input-label for="phone_number" :value="__('Phone Number')" />
+            <x-text-input
+                id="phone_number"
+                name="phone_number"
+                type="tel"
+                class="mt-1 block w-full"
+                :value="old('phone_number', $user->phone_number)"
+                placeholder="+234 801 234 5678"
+                autocomplete="tel"
+            />
+            <x-input-error class="mt-2" :messages="$errors->get('phone_number')" />
+            @if (auth()->user()->isCandidate())
+                <p class="mt-1 text-sm text-gray-500">{{ __('Shown on your public portfolio to employers only.') }}</p>
+            @endif
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

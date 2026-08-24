@@ -15,8 +15,10 @@ use App\Http\Controllers\Candidate\CandidateProfileEditController;
 use App\Http\Controllers\Candidate\CandidateVerificationController;
 use App\Http\Controllers\CandidateDashboardController;
 use App\Http\Controllers\CandidateOnboardingController;
+use App\Http\Controllers\CandidatePortfolioController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CandidateRecommendationController;
+use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\Employer\ATS\ApplicationNoteController;
 use App\Http\Controllers\Employer\ATS\ATSController;
 use App\Http\Controllers\Employer\ATS\CandidateRatingController;
@@ -72,6 +74,12 @@ Route::middleware('auth')->group(function () {
         return response()->json(['success' => true]);
     })->name('welcome.dismiss');
 });
+
+Route::get('/candidates/{candidate}', [CandidatePortfolioController::class, 'show'])
+    ->name('candidates.show');
+
+Route::get('/employers/{company}', [CompanyProfileController::class, 'show'])
+    ->name('employers.show');
 
 require __DIR__.'/auth.php';
 
@@ -158,6 +166,10 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
 
     Route::post('/messages/{conversation}/send', [MessageController::class, 'sendMessage'])
         ->name('messages.send');
+
+    Route::post('/candidate/messages/conversation/{employer}', [MessageController::class, 'createOrGetConversation'])
+        ->middleware('role:candidate')
+        ->name('candidate.messages.create');
 
     Route::post('/messages/{conversation}/typing', [MessageController::class, 'typing'])
         ->name('messages.typing');
@@ -339,6 +351,11 @@ Route::middleware(['auth', 'role:admin'])
         Route::patch('/employers/{employer}/verify', [AdminEmployerController::class, 'verify'])->name('admin.employers.verify');
 
         Route::get('/jobs', [AdminJobController::class, 'index'])->name('admin.jobs');
+        Route::get('/jobs/{job}/edit', [AdminJobController::class, 'edit'])->name('admin.jobs.edit');
+        Route::patch('/jobs/{job}', [AdminJobController::class, 'update'])->name('admin.jobs.update');
+        Route::delete('/jobs/{job}', [AdminJobController::class, 'destroy'])->name('admin.jobs.destroy');
+        Route::post('/jobs/{job}/toggle-status', [AdminJobController::class, 'toggleStatus'])->name('admin.jobs.toggle-status');
+        Route::get('/jobs/{job}', [AdminJobController::class, 'show'])->name('admin.jobs.show');
 
         Route::get('/analytics', [AdminAnalyticsController::class, 'index'])->name('admin.analytics');
 

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class EmployerJobController extends Controller
 {
@@ -40,10 +41,14 @@ class EmployerJobController extends Controller
             'employment_type' => 'required|in:full_time,part_time,contract,freelance,internship',
             'work_preference' => 'required|in:remote,hybrid,onsite,flexible',
             'salary_min' => 'nullable|numeric|min:0',
-            'salary_max' => 'nullable|numeric|min:0',
+            'salary_max' => 'nullable|numeric|gte:salary_min|min:0',
+            'salary_currency' => ['nullable', 'string', Rule::in(Job::supportedCurrencies())],
+            'salary_period' => ['nullable', 'string', Rule::in(array_keys(Job::salaryPeriods()))],
             'minimum_experience' => 'nullable|integer|min:0',
             'description' => 'required|string',
-            'responsibilities' => 'nullable|string',
+            'responsibilities' => 'nullable|string|max:10000',
+            'requirements' => 'nullable|string|max:10000',
+            'benefits' => 'nullable|string|max:10000',
             'required_skills' => 'nullable',
             'personality_preferences' => 'nullable',
             'temperament_preference' => 'nullable|string|max:100',
@@ -55,10 +60,11 @@ class EmployerJobController extends Controller
             $job = Job::create([
                 ...$validated,
                 'employer_id' => Auth::id(),
+                'company_id' => Auth::user()->company?->id,
                 'slug' => Str::slug($validated['title']).'-'.Str::random(6),
                 'status' => 'open',
                 'minimum_experience' => $validated['minimum_experience'] ?? 0,
-                'required_skills_json' => is_array($validated['required_skills'] ?? null) ? $validated['required_skills'] : [],
+                'required_skills_json' => $this->normalizeSkills($validated['required_skills'] ?? null),
                 'personality_preferences_json' => is_array($validated['personality_preferences'] ?? null) ? $validated['personality_preferences'] : [],
             ]);
 
@@ -105,12 +111,17 @@ class EmployerJobController extends Controller
             'employment_type' => 'required|in:full_time,part_time,contract,freelance,internship',
             'work_preference' => 'required|in:remote,hybrid,onsite,flexible',
             'salary_min' => 'nullable|numeric|min:0',
-            'salary_max' => 'nullable|numeric|min:0',
+            'salary_max' => 'nullable|numeric|gte:salary_min|min:0',
+            'salary_currency' => ['nullable', 'string', Rule::in(Job::supportedCurrencies())],
+            'salary_period' => ['nullable', 'string', Rule::in(array_keys(Job::salaryPeriods()))],
             'salary_visible' => 'boolean',
             'minimum_experience' => 'nullable|integer|min:0',
             'experience_level' => 'nullable|in:entry,junior,mid,senior,lead,principal,any',
             'description' => 'required|string',
-            'required_skills' => 'nullable|array',
+            'responsibilities' => 'nullable|string|max:10000',
+            'requirements' => 'nullable|string|max:10000',
+            'benefits' => 'nullable|string|max:10000',
+            'required_skills' => 'nullable',
             'personality_preferences' => 'nullable|array',
             'temperament_preference' => 'nullable|string|max:100',
             'status' => 'nullable|in:draft,open,paused,closed,filled',
@@ -126,11 +137,16 @@ class EmployerJobController extends Controller
             'work_preference' => $validated['work_preference'],
             'salary_min' => $validated['salary_min'] ?? null,
             'salary_max' => $validated['salary_max'] ?? null,
+            'salary_currency' => $validated['salary_currency'] ?? null,
+            'salary_period' => $validated['salary_period'] ?? null,
             'salary_visible' => $validated['salary_visible'] ?? true,
             'minimum_experience' => $validated['minimum_experience'] ?? 0,
             'experience_level' => $validated['experience_level'] ?? 'any',
             'description' => $validated['description'],
-            'required_skills_json' => $validated['required_skills'] ?? [],
+            'responsibilities' => $validated['responsibilities'] ?? null,
+            'requirements' => $validated['requirements'] ?? null,
+            'benefits' => $validated['benefits'] ?? null,
+            'required_skills_json' => $this->normalizeSkills($validated['required_skills'] ?? null),
             'personality_preferences_json' => $validated['personality_preferences'] ?? [],
             'temperament_preference' => $validated['temperament_preference'] ?? null,
             'status' => $validated['status'] ?? $job->status,
@@ -152,5 +168,18 @@ class EmployerJobController extends Controller
 
         return redirect()->route('employer.jobs.index')
             ->with('success', 'Job deleted successfully!');
+    }
+
+    private function normalizeSkills(mixed $skills): array
+    {
+        if (is_array($skills)) {
+            return array_values(array_filter(array_map('trim', $skills)));
+        }
+
+        if (is_string($skills)) {
+            return array_values(array_filter(array_map('trim', explode(',', $skills))));
+        }
+
+        return [];
     }
 }

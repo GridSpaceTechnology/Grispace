@@ -81,17 +81,48 @@
                         </div>
 
                         <div>
-                            <label for="salary_min" class="block text-sm font-medium text-gray-700 mb-1">Minimum Salary ($)</label>
-                            <input type="number" name="salary_min" id="salary_min" min="0"
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                   placeholder="50000">
+                            <label for="salary_currency" class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                            <select name="salary_currency" id="salary_currency"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @foreach(config('currencies.currencies') as $code => $currency)
+                                    <option value="{{ $code }}" @if(old('salary_currency', 'NGN') === $code) selected @endif>
+                                        {{ $currency['symbol'] }} – {{ $code }} ({{ $currency['name'] }})
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div>
-                            <label for="salary_max" class="block text-sm font-medium text-gray-700 mb-1">Maximum Salary ($)</label>
+                            <label for="salary_min" class="block text-sm font-medium text-gray-700 mb-1">Minimum Salary</label>
+                            <input type="number" name="salary_min" id="salary_min" min="0"
+                                   value="{{ old('salary_min') }}"
+                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                   placeholder="50000">
+                            @error('salary_max')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="salary_max" class="block text-sm font-medium text-gray-700 mb-1">Maximum Salary</label>
                             <input type="number" name="salary_max" id="salary_max" min="0"
+                                   value="{{ old('salary_max') }}"
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                    placeholder="80000">
+                        </div>
+
+                        <div>
+                            <label for="salary_period" class="block text-sm font-medium text-gray-700 mb-1">Salary Period</label>
+                            <select name="salary_period" id="salary_period"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Not specified</option>
+                                @foreach(config('currencies.salary_periods') as $key => $period)
+                                    <option value="{{ $key }}" @if(old('salary_period') === $key) selected @endif>{{ $period }}</option>
+                                @endforeach
+                            </select>
+                            @error('salary_period')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
@@ -121,7 +152,30 @@
                             <label for="responsibilities" class="block text-sm font-medium text-gray-700 mb-1">Key Responsibilities</label>
                             <textarea name="responsibilities" id="responsibilities" rows="4"
                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                      placeholder="List the main responsibilities..."></textarea>
+                                      placeholder="List the main responsibilities...">{{ old('responsibilities') }}</textarea>
+                            @error('responsibilities')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="requirements" class="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
+                            <textarea name="requirements" id="requirements" rows="4"
+                                      class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                      placeholder="Qualifications, experience, and other requirements...">{{ old('requirements') }}</textarea>
+                            @error('requirements')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="benefits" class="block text-sm font-medium text-gray-700 mb-1">Benefits</label>
+                            <textarea name="benefits" id="benefits" rows="3"
+                                      class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                      placeholder="Health insurance, flexible hours, remote stipend...">{{ old('benefits') }}</textarea>
+                            @error('benefits')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>

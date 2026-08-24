@@ -55,6 +55,7 @@ class EmployerProfileController extends Controller
             'twitter_url' => $validated['twitter_url'] ?? null,
             'culture_description' => $validated['culture_description'] ?? null,
             'work_model' => $validated['work_model'],
+            'allow_candidate_messages' => $request->boolean('allow_candidate_messages'),
         ];
 
         if ($request->hasFile('logo')) {

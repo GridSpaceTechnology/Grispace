@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
 use App\Events\TypingIndicator;
+use App\Models\Company;
 use App\Models\Conversation;
 use App\Models\EmployerShortlist;
 use App\Models\Interview;
@@ -158,45 +159,61 @@ class MessageController extends Controller
         ]);
     }
 
-    public function createOrGetConversation(Request $request, User $candidate): JsonResponse
+    /**
+     * Create or fetch a conversation with the other party.
+     *
+     * Route binds the target user as "{employer}": when a candidate initiates,
+     * this is the receiving employer; when an employer initiates, it holds the
+     * candidate's id.
+     */
+    public function createOrGetConversation(Request $request, User $employer): JsonResponse
     {
         $user = Auth::user();
+        $recipient = $employer;
 
-        if ($user->isCandidate()) {
-            $hasConnection = JobApplication::where('candidate_id', $user->id)
-                ->whereHas('job', fn ($q) => $q->where('employer_id', $candidate->id))
-                ->exists();
-
-            if (! $hasConnection) {
-                return response()->json(['error' => 'You can only message employers you have applied to.'], 403);
-            }
-        } else {
+        if ($user->isEmployer()) {
             $hasConnection = EmployerShortlist::where('employer_id', $user->id)
-                ->where('candidate_id', $candidate->id)
+                ->where('candidate_id', $recipient->id)
                 ->exists()
                 || Interview::where('employer_id', $user->id)
-                    ->where('candidate_id', $candidate->id)
+                    ->where('candidate_id', $recipient->id)
                     ->exists()
                 || JobApplication::whereHas('job', fn ($q) => $q->where('employer_id', $user->id))
-                    ->where('candidate_id', $candidate->id)
+                    ->where('candidate_id', $recipient->id)
                     ->exists();
 
             if (! $hasConnection) {
                 return response()->json(['error' => 'You can only message candidates with a connection.'], 403);
             }
+
+            $employerId = $user->id;
+            $candidateId = $recipient->id;
+        } else {
+            if (! $recipient->isEmployer() || $recipient->id === $user->id) {
+                return response()->json(['error' => 'You can only message employers.'], 403);
+            }
+
+            if (! $this->employerAcceptsMessages($recipient)) {
+                return response()->json([
+                    'error' => 'This employer is currently not accepting messages from candidates.',
+                ], 403);
+            }
+
+            $employerId = $recipient->id;
+            $candidateId = $user->id;
         }
 
         $jobId = $request->get('job_id');
 
-        $conversation = Conversation::where('employer_id', $user->isEmployer() ? $user->id : $candidate->id)
-            ->where('candidate_id', $user->isCandidate() ? $user->id : $candidate->id)
+        $conversation = Conversation::where('employer_id', $employerId)
+            ->where('candidate_id', $candidateId)
             ->when($jobId, fn ($q) => $q->where('job_id', $jobId))
             ->first();
 
         if (! $conversation) {
             $conversation = Conversation::create([
-                'employer_id' => $user->isEmployer() ? $user->id : $candidate->id,
-                'candidate_id' => $user->isCandidate() ? $user->id : $candidate->id,
+                'employer_id' => $employerId,
+                'candidate_id' => $candidateId,
                 'job_id' => $jobId,
                 'last_message_at' => now(),
             ]);
@@ -205,6 +222,17 @@ class MessageController extends Controller
         return response()->json([
             'conversation_id' => $conversation->id,
         ]);
+    }
+
+    private function employerAcceptsMessages(User $employer): bool
+    {
+        $company = Company::where('user_id', $employer->id)->first();
+
+        if (! $company) {
+            return true;
+        }
+
+        return $company->allow_candidate_messages !== false;
     }
 
     public function markAsRead(Request $request, Conversation $conversation): JsonResponse

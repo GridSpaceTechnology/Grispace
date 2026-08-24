@@ -15,13 +15,15 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-6 sm:p-8">
                 <div class="flex items-start gap-4 mb-6">
-                    <div class="w-14 h-14 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span class="text-indigo-600 font-semibold text-xl">{{ substr($job->employer->name ?? 'C', 0, 1) }}</span>
-                    </div>
+                    <x-company-logo :company="$job->company" :fallback="$job->employer->name ?? 'Company'" size="lg"/>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">{{ $job->title }}</h1>
                         <p class="text-lg text-gray-600">
-                            {{ $job->employer->name ?? 'Company' }}
+                            @if($job->company)
+                                <a href="{{ route('employers.show', $job->company) }}" class="hover:text-brand-primary hover:underline">{{ $job->company->name }}</a>
+                            @else
+                                {{ $job->employer->name ?? 'Company' }}
+                            @endif
                             @if($job->company?->is_verified)
                                 <svg class="w-4 h-4 text-blue-500 inline" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -71,10 +73,8 @@
                     @if($job->role)
                         <x-badge variant="indigo">{{ $job->role }}</x-badge>
                     @endif
-                    @if($job->salary_min || $job->salary_max)
-                        <x-badge variant="success">
-                            ${{ number_format($job->salary_min ?? 0) }} - ${{ number_format($job->salary_max ?? 0) }}
-                        </x-badge>
+                    @if($job->salaryLabel())
+                        <x-badge variant="success">{{ $job->salaryLabel() }}</x-badge>
                     @endif
                     @if($job->industry)
                         <x-badge>{{ $job->industry }}</x-badge>
@@ -86,11 +86,66 @@
                     @endif
                 </div>
 
+                @php
+                    $overview = array_filter([
+                        'Role' => $job->role,
+                        'Industry' => $job->industry,
+                        'Employment Type' => $job->employment_type ? str_replace('_', ' ', ucfirst($job->employment_type)) : null,
+                        'Experience Level' => filled($job->experience_level) && $job->experience_level !== 'any' ? ucfirst($job->experience_level) : null,
+                        'Minimum Experience' => filled($job->minimum_experience) ? $job->minimum_experience.'+ year'.($job->minimum_experience == 1 ? '' : 's') : null,
+                        'Work Mode' => $job->work_preference ? ucfirst($job->work_preference) : null,
+                        'Location' => collect([$job->location, $job->location_country])->filter()->implode(', ') ?: null,
+                        'Salary' => $job->salaryLabel(),
+                        'Temperament Fit' => $job->temperament_preference ? ucfirst($job->temperament_preference) : null,
+                        'Status' => ucfirst($job->status),
+                        'Posted' => $job->created_at->format('M d, Y'),
+                    ], fn ($value) => filled($value));
+                @endphp
+
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-3">Job Overview</h2>
+                    <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 bg-slate-50 border border-slate-100 rounded-xl p-5">
+                        @foreach($overview as $label => $value)
+                            <div>
+                                <dt class="text-xs uppercase tracking-wide text-slate-500">{{ $label }}</dt>
+                                <dd class="mt-0.5 text-sm font-medium text-gray-900 break-words">{{ $value }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
+
                 @if($job->description)
                     <div class="mb-6">
                         <h2 class="text-lg font-semibold text-gray-900 mb-3">Job Description</h2>
                         <div class="prose prose-sm max-w-none text-gray-700">
                             {!! nl2br(e($job->description)) !!}
+                        </div>
+                    </div>
+                @endif
+
+                @if($job->responsibilities)
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-3">Responsibilities</h2>
+                        <div class="prose prose-sm max-w-none text-gray-700">
+                            {!! nl2br(e($job->responsibilities)) !!}
+                        </div>
+                    </div>
+                @endif
+
+                @if($job->requirements)
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-3">Requirements</h2>
+                        <div class="prose prose-sm max-w-none text-gray-700">
+                            {!! nl2br(e($job->requirements)) !!}
+                        </div>
+                    </div>
+                @endif
+
+                @if($job->benefits)
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-3">Benefits</h2>
+                        <div class="prose prose-sm max-w-none text-gray-700">
+                            {!! nl2br(e($job->benefits)) !!}
                         </div>
                     </div>
                 @endif
@@ -108,15 +163,60 @@
                     </div>
                 @endif
 
+                @if(is_array($job->personality_preferences_json) && count($job->personality_preferences_json) > 0)
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-3">Candidate Preferences</h2>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($job->personality_preferences_json as $preference)
+                                <span class="px-3 py-1 bg-purple-50 rounded-full text-sm text-purple-700">
+                                    {{ is_array($preference) ? implode(': ', $preference) : $preference }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <div class="pt-6 border-t border-gray-200">
                     @auth
                         @if(auth()->user()->isCandidate())
-                            <form method="POST" action="{{ route('candidate.jobs.apply', ['job' => $job->id]) }}">
-                                @csrf
-                                <button type="submit" class="px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                                    Apply Now
-                                </button>
-                            </form>
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <form method="POST" action="{{ route('candidate.jobs.apply', ['job' => $job->id]) }}">
+                                    @csrf
+                                    <button type="submit" class="w-full sm:w-auto px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                                        Apply Now
+                                    </button>
+                                </form>
+                                @if($canMessage)
+                                    <button type="button" x-data="{ sending: false }"
+                                        @click="
+                                            if (sending) return;
+                                            sending = true;
+                                            fetch('{{ route('candidate.messages.create', ['employer' => $job->employer_id]) }}', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                    'Content-Type': 'application/json',
+                                                    'Accept': 'application/json',
+                                                },
+                                                body: JSON.stringify({}),
+                                            })
+                                            .then(async (res) => {
+                                                const data = await res.json();
+                                                if (res.ok && data.conversation_id) {
+                                                    window.location.href = '{{ url('messages') }}/' + data.conversation_id;
+                                                } else {
+                                                    alert(data.error || 'Unable to start conversation.');
+                                                    sending = false;
+                                                }
+                                            })
+                                            .catch(() => { alert('Something went wrong.'); sending = false; });
+                                        "
+                                        :disabled="sending" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-brand-primary text-brand-primary rounded-lg hover:bg-brand-primary/5 transition-colors font-medium disabled:opacity-60">
+                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                        Message Employer
+                                    </button>
+                                @endif
+                            </div>
                         @else
                             <p class="text-sm text-gray-500">Log in as a candidate to apply for this position.</p>
                         @endif

@@ -67,15 +67,9 @@
                             </span>
                         </div>
 
-                        @if($job->salary_min || $job->salary_max)
+                        @if($job->salaryLabel())
                             <div class="text-sm font-medium text-gray-700 mb-3">
-                                @if($job->salary_min && $job->salary_max)
-                                    ${{ number_format($job->salary_min) }} - ${{ number_format($job->salary_max) }}
-                                @elseif($job->salary_min)
-                                    From ${{ number_format($job->salary_min) }}
-                                @else
-                                    Up to ${{ number_format($job->salary_max) }}
-                                @endif
+                                {{ $job->salaryLabel() }}
                             </div>
                         @endif
 

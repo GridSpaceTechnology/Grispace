@@ -10,7 +10,7 @@ class PublicJobController extends Controller
     public function index(Request $request)
     {
         $query = Job::where('status', 'open')
-            ->with('employer.company');
+            ->with(['employer.company', 'company']);
 
         if ($request->has('search') && $request->search) {
             $search = $request->search;
@@ -34,10 +34,19 @@ class PublicJobController extends Controller
 
     public function show(Job $job)
     {
-        $job->load('employer.company');
+        $job->load(['employer.company', 'company']);
+
+        $viewer = auth()->user();
+        $canMessage = false;
+
+        if ($viewer && $viewer->isCandidate() && ! $viewer->isSuspendedForUnverifiedEmail()) {
+            $company = $job->company ?? $job->employer?->company;
+            $canMessage = $company === null || $company->allow_candidate_messages !== false;
+        }
 
         return view('jobs.show', [
             'job' => $job,
+            'canMessage' => $canMessage,
         ]);
     }
 }
