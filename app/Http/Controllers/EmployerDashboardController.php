@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Job;
 use App\Models\JobApplication;
 use App\Models\User;
+use App\Services\JobMatchingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class EmployerDashboardController extends Controller
 {
+    public function __construct(protected JobMatchingService $matchingEngine) {}
+
     public function index(Request $request)
     {
         $user = User::where('id', Auth::id())->first();
@@ -46,17 +49,21 @@ class EmployerDashboardController extends Controller
         $hiresCompleted = JobApplication::whereIn('job_id', $jobIds)
             ->where('status', JobApplication::STATUS_HIRED)->count();
 
-        $topCandidates = User::where('role', 'candidate')
-            ->where('onboarding_completed', true)
-            ->with('candidateProfile')
-            ->get()
-            ->take(5);
+        $recommendedJob = Job::where('employer_id', $user->id)
+            ->where('status', 'open')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $recommendedCandidates = $recommendedJob
+            ? collect($this->matchingEngine->rankCandidatesForJob($recommendedJob, [], 6)->items())
+            : collect();
 
         return view('employer.dashboard', [
             'employerProfile' => $employerProfile,
             'activeJobs' => $activeJobs,
             'recentApplications' => $recentApplications,
-            'topCandidates' => $topCandidates,
+            'recommendedJob' => $recommendedJob,
+            'recommendedCandidates' => $recommendedCandidates,
             'totalApplications' => $totalApplications,
             'shortlistedCandidates' => $shortlistedCandidates,
             'activeInterviews' => $activeInterviews,

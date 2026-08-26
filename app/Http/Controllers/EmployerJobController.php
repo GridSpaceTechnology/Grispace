@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RecalculateJobMatches;
 use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,6 +70,8 @@ class EmployerJobController extends Controller
             ]);
 
             Log::info('Job created: '.$job->id);
+
+            RecalculateJobMatches::dispatch($job);
 
             return redirect()->to('/employer/jobs/'.$job->id)
                 ->with('success', 'Job posted successfully!');
@@ -155,6 +158,8 @@ class EmployerJobController extends Controller
         if (isset($validated['status']) && $validated['status'] === 'open' && ! $job->published_at) {
             $job->update(['published_at' => now()]);
         }
+
+        RecalculateJobMatches::dispatch($job);
 
         return redirect()->route('employer.jobs.show', ['job' => $job->id])
             ->with('success', 'Job updated successfully!');

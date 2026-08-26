@@ -88,6 +88,9 @@
                                             <a href="{{ route('employer.jobs.show', ['job' => $job->id]) }}" class="text-indigo-600 hover:text-indigo-900">
                                                 View
                                             </a>
+                                            <a href="{{ route('employer.jobs.candidates', ['job' => $job->id]) }}" class="text-[#052E5C] hover:underline">
+                                                Matches
+                                            </a>
                                             <a href="{{ route('employer.jobs.edit', ['job' => $job->id]) }}" class="text-brand-primary hover:text-brand-primary-hover">
                                                 Edit
                                             </a>

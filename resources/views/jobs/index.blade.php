@@ -47,14 +47,14 @@
                         <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                             <div class="flex-1">
                                 <div class="flex items-start gap-4">
-                                <x-company-logo :company="$job->company" :fallback="$job->employer->name ?? 'Company'" size="md"/>
+                                <x-company-logo :company="$job->company" :fallback="$job->company?->name ?? $job->employer->name ?? 'Company'" size="md"/>
                                     <div>
                                         <h2 class="text-xl font-semibold text-gray-900">{{ $job->title }}</h2>
                                         <p class="text-gray-600">
                                             @if($job->company)
                                                 <a href="{{ route('employers.show', $job->company) }}" class="hover:text-brand-primary hover:underline">{{ $job->company->name }}</a>
                                             @else
-                                                {{ $job->employer->name ?? 'Company' }}
+                                                {{ $job->company?->name ?? $job->employer->name ?? 'Company' }}
                                             @endif
                                             @if($job->company?->is_verified)
                                                 <svg class="w-4 h-4 text-blue-500 inline" fill="currentColor" viewBox="0 0 20 20">

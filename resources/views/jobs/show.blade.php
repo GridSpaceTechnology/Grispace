@@ -15,14 +15,14 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-6 sm:p-8">
                 <div class="flex items-start gap-4 mb-6">
-                    <x-company-logo :company="$job->company" :fallback="$job->employer->name ?? 'Company'" size="lg"/>
+                    <x-company-logo :company="$job->company" :fallback="$job->company?->name ?? $job->employer->name ?? 'Company'" size="lg"/>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">{{ $job->title }}</h1>
                         <p class="text-lg text-gray-600">
                             @if($job->company)
                                 <a href="{{ route('employers.show', $job->company) }}" class="hover:text-brand-primary hover:underline">{{ $job->company->name }}</a>
                             @else
-                                {{ $job->employer->name ?? 'Company' }}
+                                {{ $job->company?->name ?? $job->employer->name ?? 'Company' }}
                             @endif
                             @if($job->company?->is_verified)
                                 <svg class="w-4 h-4 text-blue-500 inline" fill="currentColor" viewBox="0 0 20 20">

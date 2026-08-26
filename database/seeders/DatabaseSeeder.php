@@ -15,6 +15,9 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             GridSpacePersonalityAssessmentSeeder::class,
             VerificationTypeSeeder::class,
+
+            // Demo matching data - self-guards to local environments only.
+            MatchingDemoSeeder::class,
         ]);
     }
 }

@@ -16,6 +16,8 @@ class CandidateProfile extends Model
         'employment_type_preference',
         'salary_expectation',
         'work_preference',
+        'location_country',
+        'availability',
         'greatest_achievement',
         'profile_completion_percentage',
     ];

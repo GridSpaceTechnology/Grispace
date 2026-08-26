@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RecalculateCandidateMatches;
 use App\Models\PersonalityQuestion;
 use App\Services\PersonalityAssessmentService;
 use Illuminate\Http\RedirectResponse;
@@ -420,6 +421,8 @@ class CandidateOnboardingController extends Controller
         $user->onboarding_completed = true;
         $user->save();
 
+        RecalculateCandidateMatches::dispatch($user);
+
         return redirect()->route('candidate.dashboard')
             ->with('success', 'Onboarding completed! Welcome to Gridspace.');
     }
@@ -450,6 +453,8 @@ class CandidateOnboardingController extends Controller
 
         $user->onboarding_completed = true;
         $user->save();
+
+        RecalculateCandidateMatches::dispatch($user);
 
         return redirect()->route('candidate.dashboard');
     }

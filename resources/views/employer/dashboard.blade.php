@@ -1,6 +1,63 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    .view-profile-btn {
+        position: relative;
+        background: transparent;
+        border: none;
+        z-index: 1;
+        overflow: visible;
+    }
+
+    .view-profile-btn::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: inherit;
+        padding: 2px;
+        background: conic-gradient(from var(--angle, 0deg), #052E5C, #EB5233, #052E5C, #EB5233, #052E5C);
+        -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        animation: spinBorder 2s linear infinite;
+    }
+
+    .view-profile-btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: transparent;
+        z-index: -1;
+        box-shadow: 0 0 0 0 transparent;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .view-profile-btn:hover::after {
+        box-shadow:
+            0 0 12px 2px rgba(235, 82, 51, 0.25),
+            0 0 24px 4px rgba(5, 46, 92, 0.12);
+    }
+
+    @property --angle {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: false;
+    }
+
+    @keyframes spinBorder {
+        to { --angle: 360deg; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .view-profile-btn::before {
+            animation: none;
+        }
+    }
+</style>
 <div class="py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if(auth()->user()->onboarding_completed)
@@ -191,29 +248,41 @@
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h2 class="text-lg font-semibold text-gray-900">Top Matching Candidates</h2>
-                <a href="{{ route('employer.marketplace.index') }}" class="text-sm text-indigo-600 hover:text-indigo-700">Browse all</a>
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Recommended Candidates</h2>
+                    @if($recommendedJob)
+                        <p class="text-xs text-gray-500 mt-0.5">
+                            Best matches for
+                            <a href="{{ route('employer.jobs.candidates', ['job' => $recommendedJob->id]) }}" class="text-[#EB5233] hover:underline font-medium">{{ $recommendedJob->title }}</a>
+                        </p>
+                    @endif
+                </div>
+                <a href="{{ route('employer.marketplace.index') }}" class="text-sm text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Browse all</a>
             </div>
             <div class="p-6">
-                @if($topCandidates->isEmpty())
+                @if($recommendedCandidates->isEmpty())
                     <div class="text-center py-8">
                         <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
-                        <p class="text-gray-500">No candidates available</p>
+                        <p class="text-gray-500">No candidates to rank yet - post an open job to see ranked matches</p>
                     </div>
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        @foreach($topCandidates as $candidate)
-                            <div class="p-4 bg-gray-50 rounded-lg">
-                                <div class="flex items-center gap-3 mb-3">
-                                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                        @foreach($recommendedCandidates as $item)
+                            @php $candidate = $item['candidate']; @endphp
+                            <div class="p-4 bg-gray-50 rounded-lg relative">
+                                <div class="absolute top-3 right-3 flex items-center justify-end">
+                                    <x-match-badge :score="$item['overall_score']" size="sm" />
+                                </div>
+                                <div class="flex items-center gap-3 mb-3 pr-14">
+                                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center shrink-0">
                                         <span class="text-indigo-600 font-medium">{{ substr($candidate->name, 0, 1) }}</span>
                                     </div>
-                                    <div>
-                                        <h3 class="font-medium text-gray-900">{{ $candidate->name }}</h3>
-                                        <p class="text-sm text-gray-500">{{ $candidate->candidateProfile?->desired_role ?? 'Not specified' }}</p>
+                                    <div class="min-w-0">
+                                        <h3 class="font-medium text-gray-900 truncate">{{ $candidate->name }}</h3>
+                                        <p class="text-sm text-gray-500 truncate">{{ $candidate->candidateProfile?->desired_role ?? 'Not specified' }}</p>
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-2 mb-3">
@@ -221,7 +290,7 @@
                                         <span class="text-xs bg-white px-2 py-1 rounded border border-gray-200">{{ $skill->skill_name }}</span>
                                     @endforeach
                                 </div>
-                                <a href="{{ route('employer.marketplace.candidate', ['candidate' => $candidate->id]) }}" class="block w-full text-center text-sm bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                <a href="{{ route('employer.jobs.candidates', ['job' => $recommendedJob->id]) }}" class="view-profile-btn block w-full text-center text-sm text-[#052E5C] hover:text-[#EB5233] py-2 rounded-lg font-medium transition-colors">
                                     View Profile
                                 </a>
                             </div>

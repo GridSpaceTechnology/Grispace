@@ -120,7 +120,7 @@
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <h3 class="font-medium text-gray-900">{{ $match['job']->title }}</h3>
-                                            <p class="text-sm text-gray-500">{{ $match['job']->company ?? $match['job']->employer->name }}</p>
+                                            <p class="text-sm text-gray-500">{{ $match['job']->company?->name ?? $match['job']->employer->name ?? 'Company' }}</p>
                                         </div>
                                         <div class="text-right">
                                             <div class="text-lg font-bold text-indigo-600">{{ $match['match_percentage'] }}%</div>
@@ -201,7 +201,7 @@
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <h3 class="font-medium text-gray-900">{{ $application->job->title }}</h3>
-                                            <p class="text-sm text-gray-500">{{ $application->job->employer->name }}</p>
+                                            <p class="text-sm text-gray-500">{{ $application->job->company?->name ?? $application->job->employer->name ?? 'Company' }}</p>
                                         </div>
                                         <span class="px-2.5 py-1 text-xs font-medium rounded-full 
                                             @switch($application->status)

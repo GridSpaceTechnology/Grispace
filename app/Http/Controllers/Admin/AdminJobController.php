@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\RecalculateJobMatches;
 use App\Models\Job;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,6 +63,8 @@ class AdminJobController extends Controller
                 ? now()
                 : $job->published_at,
         ]);
+
+        RecalculateJobMatches::dispatch($job);
 
         return redirect()->route('admin.jobs')
             ->with('success', "Job \"{$job->title}\" updated successfully.");

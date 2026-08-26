@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RecalculateCandidateMatches;
 use App\Models\PersonalityQuestion;
 use App\Services\MatchingEngineService;
 use App\Services\PersonalityAssessmentService;
@@ -99,6 +100,8 @@ class PersonalityAssessmentController extends Controller
 
         if (! $nextQuestion) {
             $this->assessmentService->completeAssessment($user);
+
+            RecalculateCandidateMatches::dispatch($user);
 
             return redirect()->route('candidate.personality.complete');
         }

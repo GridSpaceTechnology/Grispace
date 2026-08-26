@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Candidate;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\RecalculateCandidateMatches;
 use App\Models\CandidateProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,6 +40,8 @@ class CandidateProfileEditController extends Controller
             ['user_id' => $user->id],
             $validated
         );
+
+        RecalculateCandidateMatches::dispatch($user);
 
         return redirect()->route('candidate.profile.edit')
             ->with('success', 'Profile updated successfully!');
