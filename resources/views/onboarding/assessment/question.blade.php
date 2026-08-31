@@ -1,6 +1,21 @@
 @extends('onboarding.layout')
 
 @section('content')
+    @php
+        $sectionLabels = [
+            'work_style' => 'Work Style',
+            'communication_style' => 'Communication Style',
+            'team_dynamics' => 'Team Dynamics',
+            'problem_solving' => 'Problem Solving',
+            'leadership_initiative' => 'Leadership & Initiative',
+            'work_environment_preference' => 'Work Environment',
+            'motivation_drivers' => 'Motivation Drivers',
+            'temperament_indicators' => 'Temperament Indicators',
+            'organizational_culture' => 'Organizational Culture',
+        ];
+
+        $sectionDescription = $sectionLabels[$question->category ?? ''] ?? ucwords(str_replace('_', ' ', $question->category ?? 'Assessment'));
+    @endphp
     <div class="flex items-center justify-between mb-2">
         <span class="text-sm font-medium text-gray-600">
             Question {{ $currentQuestionNumber }} of {{ $totalQuestions }}
@@ -12,6 +27,13 @@
     <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden mb-6">
         <div class="h-full bg-indigo-600 rounded-full transition-all duration-500"
              style="width: {{ (int) round(($currentQuestionNumber / $totalQuestions) * 100) }}%"></div>
+    </div>
+
+    <div class="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-indigo-100 text-indigo-700">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        </svg>
+        {{ $sectionDescription }}
     </div>
 
     <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-6 leading-tight">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\ProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,6 +47,10 @@ class ProfileController extends Controller
 
         $user->save();
 
+        if ($user->isCandidate()) {
+            app(ProfileCompletionService::class)->sync($user);
+        }
+
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
@@ -60,6 +65,10 @@ class ProfileController extends Controller
             Storage::disk('public')->delete($user->profile_photo_path);
             $user->profile_photo_path = null;
             $user->save();
+
+            if ($user->isCandidate()) {
+                app(ProfileCompletionService::class)->sync($user);
+            }
         }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');

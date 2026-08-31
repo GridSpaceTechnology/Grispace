@@ -276,8 +276,9 @@ class OnboardingService
         $candidate->update([
             'onboarding_completed' => true,
             'onboarding_completed_at' => now(),
-            'profile_completion_percentage' => 100,
         ]);
+
+        app(ProfileCompletionService::class)->sync($candidate);
 
         return $candidate->fresh();
     }

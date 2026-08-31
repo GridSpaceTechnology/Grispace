@@ -7,6 +7,7 @@ use App\Models\JobApplication;
 use App\Models\User;
 use App\Services\MatchingEngine;
 use App\Services\MatchingEngineService;
+use App\Services\ProfileCompletionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,12 +44,18 @@ class CandidateDashboardController extends Controller
             ? $this->matchingEngineService->getTopMatchingJobs($user, 5)
             : collect();
 
+        $completionService = app(ProfileCompletionService::class);
+        $completion = $completionService->sync($user);
+
         return view('candidate.dashboard', [
             'profile' => $profile,
             'personalityProfile' => $personalityProfile,
             'applications' => $applications,
             'matchingJobs' => $matchingJobs,
             'recommendedJobs' => $recommendedJobs,
+            'profileCompletion' => $completion,
+            'profileCompletionItems' => $completionService->items($user),
+            'profileComplete' => $completionService->complete($user),
         ]);
     }
 

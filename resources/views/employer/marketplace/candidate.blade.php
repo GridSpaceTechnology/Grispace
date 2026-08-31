@@ -301,6 +301,19 @@
                                 </a>
                             </div>
                         @endif
+
+                        @if($candidate->candidateMedia->cv_path)
+                            <div class="mb-3">
+                                <p class="text-sm text-gray-500 mb-1">Resume</p>
+                                <div class="flex items-center gap-3">
+                                    <a href="{{ route('employer.resume.view', $candidate) }}" target="_blank"
+                                        class="text-brand-primary hover:underline">View</a>
+                                    <span class="text-gray-300">|</span>
+                                    <a href="{{ route('employer.resume.download', $candidate) }}"
+                                        class="text-brand-primary hover:underline">Download</a>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @endif
             </div>

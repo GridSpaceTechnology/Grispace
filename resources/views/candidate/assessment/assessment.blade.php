@@ -3,6 +3,34 @@
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-white to-orange-50">
     <div class="max-w-2xl mx-auto px-4 py-6 md:py-8">
+        @php
+            $sectionLabels = [
+                'work_style' => 'Work Style',
+                'communication_style' => 'Communication Style',
+                'team_dynamics' => 'Team Dynamics',
+                'problem_solving' => 'Problem Solving',
+                'leadership_initiative' => 'Leadership & Initiative',
+                'work_environment_preference' => 'Work Environment',
+                'motivation_drivers' => 'Motivation Drivers',
+                'temperament_indicators' => 'Temperament Indicators',
+                'organizational_culture' => 'Organizational Culture',
+            ];
+
+            $sectionDescriptions = [
+                'work_style' => 'How you approach tasks, deadlines and your daily rhythm.',
+                'communication_style' => 'How you prefer to communicate and share information.',
+                'team_dynamics' => 'How you collaborate and interact within a team.',
+                'problem_solving' => 'How you analyse, decide and solve problems.',
+                'leadership_initiative' => 'How you take ownership, lead and drive results.',
+                'work_environment_preference' => 'The kind of environment where you do your best work.',
+                'motivation_drivers' => 'What keeps you engaged and motivated at work.',
+                'temperament_indicators' => 'Your natural temperament and energy style.',
+                'organizational_culture' => 'The company culture where you thrive.',
+            ];
+
+            $sectionLabel = $sectionLabels[$question->category ?? ''] ?? ucwords(str_replace('_', ' ', $question->category ?? 'Assessment'));
+            $sectionDescription = $sectionDescriptions[$question->category ?? ''] ?? null;
+        @endphp
         @isset($question)
             <div class="mb-6">
                 <div class="flex items-center justify-between mb-2">
@@ -32,9 +60,16 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6 md:p-10">
-                <p class="text-xs font-semibold uppercase tracking-wider mb-3" style="color: #EB5233;">
-                    {{ str_replace('_', ' ', $question->category) }}
-                </p>
+                <div class="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"
+                     style="background-color: rgba(235, 82, 51, 0.1); color: #EB5233;">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                    </svg>
+                    {{ $sectionLabel }}
+                </div>
+                @if($sectionDescription)
+                    <p class="text-sm text-slate-500 mb-4">{{ $sectionDescription }}</p>
+                @endif
 
                 <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-6 leading-tight">
                     {{ $question->question_text }}

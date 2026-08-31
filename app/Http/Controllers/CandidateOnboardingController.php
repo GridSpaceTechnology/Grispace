@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\RecalculateCandidateMatches;
 use App\Models\PersonalityQuestion;
 use App\Services\PersonalityAssessmentService;
+use App\Services\ProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -335,67 +336,7 @@ class CandidateOnboardingController extends Controller
 
     protected function updateProfileCompletion($user): void
     {
-        $percentage = 0;
-
-        if ($user->candidateProfile) {
-            $percentage += 25;
-            if ($user->candidateProfile->desired_role) {
-                $percentage += 5;
-            }
-            if ($user->candidateProfile->years_of_experience > 0) {
-                $percentage += 5;
-            }
-            if ($user->candidateProfile->industry) {
-                $percentage += 5;
-            }
-        }
-
-        if ($user->candidateSkills()->count() > 0) {
-            $percentage += 10;
-        }
-        if ($user->candidateExperiences()->count() > 0) {
-            $percentage += 10;
-        }
-        if ($user->candidateEducation()->count() > 0) {
-            $percentage += 5;
-        }
-
-        if ($user->candidateAssessment) {
-            $percentage += 10;
-            if ($user->candidateAssessment->skill_score > 0) {
-                $percentage += 5;
-            }
-        }
-
-        $personalityAnswerCount = $user->personalityAnswers()
-            ->whereHas('question', fn ($q) => $q->candidate())
-            ->count();
-
-        if ($personalityAnswerCount >= 12) {
-            $percentage += 10;
-        }
-
-        if ($personalityAnswerCount >= 24) {
-            $percentage += 10;
-        }
-
-        if ($user->candidatePreferences) {
-            $percentage += 5;
-        }
-
-        if ($user->candidateMedia) {
-            $percentage += 5;
-            if ($user->candidateMedia->role_video_url) {
-                $percentage += 5;
-            }
-            if ($user->candidateMedia->cv_path) {
-                $percentage += 5;
-            }
-        }
-
-        $profile = $user->candidateProfile()->firstOrNew([]);
-        $profile->profile_completion_percentage = min(100, $percentage);
-        $profile->save();
+        app(ProfileCompletionService::class)->sync($user);
     }
 
     protected function canCompleteOnboarding($user): bool
@@ -420,6 +361,8 @@ class CandidateOnboardingController extends Controller
 
         $user->onboarding_completed = true;
         $user->save();
+
+        app(ProfileCompletionService::class)->sync($user);
 
         RecalculateCandidateMatches::dispatch($user);
 
@@ -447,9 +390,7 @@ class CandidateOnboardingController extends Controller
             $user->candidatePreferences()->create([]);
         }
 
-        $profile = $user->candidateProfile;
-        $profile->profile_completion_percentage = 10;
-        $profile->save();
+        app(ProfileCompletionService::class)->sync($user);
 
         $user->onboarding_completed = true;
         $user->save();

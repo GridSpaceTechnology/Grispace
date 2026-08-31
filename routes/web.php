@@ -18,6 +18,7 @@ use App\Http\Controllers\CandidateOnboardingController;
 use App\Http\Controllers\CandidatePortfolioController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CandidateRecommendationController;
+use App\Http\Controllers\CandidateResumeController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\Employer\ATS\ApplicationNoteController;
 use App\Http\Controllers\Employer\ATS\ATSController;
@@ -127,6 +128,11 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
         ->name('candidate.profile.edit');
     Route::patch('/candidate/profile', [CandidateProfileEditController::class, 'update'])
         ->name('candidate.profile.update');
+
+    Route::get('/candidate/resume/download', [CandidateResumeController::class, 'download'])
+        ->name('candidate.resume.download');
+    Route::get('/candidate/resume/view', [CandidateResumeController::class, 'show'])
+        ->name('candidate.resume.show');
 
     Route::get('/candidate/recommended-jobs', [CandidateRecommendationController::class, 'index'])
         ->name('candidate.recommended-jobs');
@@ -259,6 +265,11 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
 
     Route::get('/employer/marketplace/candidates/{candidate}', [EmployerMarketplaceController::class, 'showCandidate'])
         ->name('employer.marketplace.candidate');
+
+    Route::get('/employer/marketplace/candidates/{candidate}/resume/download', [CandidateResumeController::class, 'download'])
+        ->name('employer.resume.download');
+    Route::get('/employer/marketplace/candidates/{candidate}/resume/view', [CandidateResumeController::class, 'show'])
+        ->name('employer.resume.view');
 
     Route::get('/employer/shortlists', [EmployerMarketplaceController::class, 'shortlists'])
         ->name('employer.shortlists');

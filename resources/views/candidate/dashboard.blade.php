@@ -63,16 +63,19 @@
                         </div>
                         <div>
                             <p class="text-sm text-slate-500">Profile Completion</p>
-                            <p class="text-2xl font-bold text-slate-900">{{ $profile?->profile_completion_percentage ?? 0 }}%</p>
+                            <p class="text-2xl font-bold text-slate-900">{{ $profileCompletion }}%</p>
                         </div>
                     </div>
                 </div>
-                <x-progress-bar :value="$profile?->profile_completion_percentage ?? 0" size="sm" />
-                @if(($profile?->profile_completion_percentage ?? 0) < 100)
-                    <a href="{{ route('candidate.onboarding.step', ['step' => 1]) }}" class="mt-3 block text-sm text-brand-primary hover:text-brand-primary-hover">
+                <x-progress-bar :value="$profileCompletion" size="sm" />
+                @unless($profileComplete)
+                    <a href="{{ route('candidate.profile.edit') }}" class="mt-3 block text-sm font-medium text-brand-primary hover:text-brand-primary-hover">
                         Complete your profile &rarr;
                     </a>
-                @endif
+                    <p class="mt-3 text-xs text-slate-500">Add your photo, resume and the remaining sections to reach 100%.</p>
+                @else
+                    <p class="mt-3 text-sm font-medium text-emerald-600">Your profile is complete!</p>
+                @endunless
             </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
