@@ -293,6 +293,15 @@
                             </div>
                         @endif
 
+                        @if($candidate->candidateMedia->portfolio_primary_url)
+                            <div class="mb-3">
+                                <p class="text-sm text-gray-500 mb-1">Portfolio / Website</p>
+                                <a href="{{ $candidate->candidateMedia->portfolio_primary_url }}" target="_blank" class="text-brand-primary hover:underline">
+                                    View Portfolio
+                                </a>
+                            </div>
+                        @endif
+
                         @if($candidate->candidateMedia->github_url)
                             <div class="mb-3">
                                 <p class="text-sm text-gray-500 mb-1">GitHub</p>

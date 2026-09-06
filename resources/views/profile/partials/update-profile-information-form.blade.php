@@ -1,11 +1,11 @@
 <section>
     <header>
         <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
+            {{ __('Personal Information') }}
         </h2>
 
         <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your profile information and photo.") }}
+            {{ __('Update your personal information, including your full name, email address, phone number, and profile picture.') }}
         </p>
     </header>
 
@@ -42,7 +42,7 @@
                         <input
                             type="file"
                             name="profile_photo"
-                            accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                            accept="image/jpeg,image/png,image/jpg,image/webp"
                             class="sr-only"
                             @change="photoPreview = URL.createObjectURL($event.target.files[0])"
                         >
@@ -64,8 +64,8 @@
         </div>
 
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+            <x-input-label for="personal_name" :value="__('Full Name')" />
+            <x-text-input id="personal_name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
@@ -76,9 +76,9 @@
         </div>
 
         <div>
-            <x-input-label for="phone_number" :value="__('Phone Number')" />
+            <x-input-label for="personal_phone" :value="__('Phone Number')" />
             <x-text-input
-                id="phone_number"
+                id="personal_phone"
                 name="phone_number"
                 type="tel"
                 class="mt-1 block w-full"

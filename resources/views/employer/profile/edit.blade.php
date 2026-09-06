@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+@php($user = auth()->user())
 <div class="min-h-screen bg-slate-50 py-12">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-8">
@@ -14,7 +15,15 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data" class="space-y-8">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            @include('profile.partials.update-profile-information-form')
+        </div>
+
+        <div class="mt-8 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            @include('profile.partials.update-password-form')
+        </div>
+
+        <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data" class="space-y-8 mt-8">
             @csrf
             @method('PATCH')
 

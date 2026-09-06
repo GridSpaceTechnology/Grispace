@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CandidateResumeController extends Controller
 {
-    public function download(User $candidate): StreamedResponse|Response
+    public function download(?User $candidate = null): StreamedResponse|Response
     {
+        $candidate = $candidate ?? Auth::user();
+
         $path = $candidate->candidateMedia?->cv_path;
 
         abort_if(! $path || ! Storage::disk('public')->exists($path), 404, 'No resume available.');
@@ -21,8 +24,10 @@ class CandidateResumeController extends Controller
         return Storage::disk('public')->download($path, $filename);
     }
 
-    public function show(User $candidate): Response
+    public function show(?User $candidate = null): Response
     {
+        $candidate = $candidate ?? Auth::user();
+
         $path = $candidate->candidateMedia?->cv_path;
 
         abort_if(! $path || ! Storage::disk('public')->exists($path), 404, 'No resume available.');

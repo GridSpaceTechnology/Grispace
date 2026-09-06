@@ -8,18 +8,17 @@ use Illuminate\Support\Str;
 class ProfileCompletionService
 {
     /**
-     * Completion items that make up 100% of a candidate profile.
+     * Required onboarding sections that make up 100% of a candidate profile.
      *
-     * Each entry has a weight, the earned flag and an optional helper label.
-     * A candidate only reaches 100% once all sections are filled, including a
-     * profile photo and an uploaded resume.
+     * Completion reflects only the required onboarding sections. Optional
+     * profile-settings fields (profile photo, resume, intro video, social
+     * links) are deliberately excluded and never reduce the percentage.
      *
      * @return array<int, array{key: string, label: string, weight: int, earned: bool}>
      */
     public function items(User $candidate): array
     {
         $profile = $candidate->candidateProfile;
-        $media = $candidate->candidateMedia;
 
         $basicProfile = $profile
             && $profile->current_role
@@ -27,7 +26,6 @@ class ProfileCompletionService
             && $profile->years_of_experience
             && $profile->industry;
 
-        $hasPhoto = (bool) $candidate->profile_photo_path;
         $hasSkills = $candidate->candidateSkills()->count() > 0;
         $hasExperience = $candidate->candidateExperiences()->count() > 0;
         $hasEducation = $candidate->candidateEducation()->count() > 0;
@@ -47,69 +45,48 @@ class ProfileCompletionService
             ->where('assessment_completed', true)
             ->exists();
 
-        $hasResume = (bool) ($media?->cv_path);
-        $hasOnlinePresence = (bool) ($media?->linkedin_url || $media?->github_url || $media?->role_video_url || ! empty($media?->portfolio_links_json));
-
         return [
             [
                 'key' => 'basic_profile',
                 'label' => 'Basic profile information',
-                'weight' => 14,
+                'weight' => 18,
                 'earned' => $basicProfile,
-            ],
-            [
-                'key' => 'profile_photo',
-                'label' => 'Profile photo',
-                'weight' => 8,
-                'earned' => $hasPhoto,
             ],
             [
                 'key' => 'skills',
                 'label' => 'Skills',
-                'weight' => 12,
+                'weight' => 16,
                 'earned' => $hasSkills,
             ],
             [
                 'key' => 'experience',
                 'label' => 'Work experience',
-                'weight' => 12,
+                'weight' => 16,
                 'earned' => $hasExperience,
             ],
             [
                 'key' => 'education',
                 'label' => 'Education',
-                'weight' => 8,
+                'weight' => 11,
                 'earned' => $hasEducation,
             ],
             [
                 'key' => 'preferences',
                 'label' => 'Job preferences',
-                'weight' => 6,
+                'weight' => 8,
                 'earned' => $hasPreferences,
             ],
             [
                 'key' => 'assessment',
                 'label' => 'Skills assessment',
-                'weight' => 16,
+                'weight' => 21,
                 'earned' => $hasAssessment,
             ],
             [
                 'key' => 'personality_answers',
                 'label' => 'Personality assessment',
-                'weight' => 8,
+                'weight' => 10,
                 'earned' => $personalityAnswered,
-            ],
-            [
-                'key' => 'resume',
-                'label' => 'Resume',
-                'weight' => 12,
-                'earned' => $hasResume,
-            ],
-            [
-                'key' => 'online_presence',
-                'label' => 'Online presence',
-                'weight' => 4,
-                'earned' => $hasOnlinePresence,
             ],
         ];
     }
@@ -124,6 +101,39 @@ class ProfileCompletionService
     public function complete(User $candidate): bool
     {
         return $this->percentage($candidate) >= 100;
+    }
+
+    /**
+     * The first required onboarding step a candidate still needs to finish,
+     * mapping incomplete sections back to the 8-step onboarding flow. Returns
+     * null when every required section is complete.
+     */
+    public function firstIncompleteStep(User $candidate): ?int
+    {
+        $earned = collect($this->items($candidate))
+            ->pluck('earned', 'key');
+
+        if (! $earned['basic_profile']) {
+            return 1;
+        }
+
+        if (! $earned['skills'] || ! $earned['experience'] || ! $earned['education']) {
+            return 2;
+        }
+
+        if (! $earned['assessment']) {
+            return 3;
+        }
+
+        if (! $earned['personality_answers']) {
+            return 4;
+        }
+
+        if (! $earned['preferences']) {
+            return 6;
+        }
+
+        return null;
     }
 
     public function sync(User $candidate): int

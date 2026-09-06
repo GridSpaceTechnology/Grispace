@@ -69,10 +69,10 @@
                 </div>
                 <x-progress-bar :value="$profileCompletion" size="sm" />
                 @unless($profileComplete)
-                    <a href="{{ route('candidate.profile.edit') }}" class="mt-3 block text-sm font-medium text-brand-primary hover:text-brand-primary-hover">
-                        Complete your profile &rarr;
+                    <a href="{{ route('candidate.onboarding.step', ['step' => $nextOnboardingStep]) }}" class="mt-3 block text-sm font-medium text-brand-primary hover:text-brand-primary-hover">
+                        Continue onboarding &rarr;
                     </a>
-                    <p class="mt-3 text-xs text-slate-500">Add your photo, resume and the remaining sections to reach 100%.</p>
+                    <p class="mt-3 text-xs text-slate-500">Finish the required onboarding sections to reach 100%.</p>
                 @else
                     <p class="mt-3 text-sm font-medium text-emerald-600">Your profile is complete!</p>
                 @endunless

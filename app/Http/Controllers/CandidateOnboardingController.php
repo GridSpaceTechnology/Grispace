@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\RecalculateCandidateMatches;
 use App\Models\PersonalityQuestion;
+use App\Models\User;
 use App\Services\PersonalityAssessmentService;
 use App\Services\ProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
@@ -38,7 +39,7 @@ class CandidateOnboardingController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->onboarding_completed) {
+        if ($this->blocksOnboardingReentry($user)) {
             return redirect()->route('candidate.dashboard');
         }
 
@@ -60,7 +61,7 @@ class CandidateOnboardingController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->onboarding_completed) {
+        if ($this->blocksOnboardingReentry($user)) {
             return redirect()->route('candidate.dashboard');
         }
 
@@ -209,6 +210,7 @@ class CandidateOnboardingController extends Controller
             8 => [
                 'role_video_url' => 'nullable|string|max:500',
                 'cv_path' => 'required|file|mimes:pdf,doc,docx|max:2048',
+                'portfolio_url' => 'nullable|string|max:500',
                 'linkedin_url' => 'nullable|string|max:500',
                 'github_url' => 'nullable|string|max:500',
                 'portfolio_links' => 'nullable|array',
@@ -320,11 +322,15 @@ class CandidateOnboardingController extends Controller
     protected function saveStep8($user, Request $request): void
     {
         $media = $user->candidateMedia()->firstOrNew([]);
+
+        $portfolio = $request->input('portfolio_url');
+        $portfolioLinks = $portfolio ? [$portfolio] : [];
+
         $media->fill([
             'role_video_url' => $request->input('role_video_url'),
             'linkedin_url' => $request->input('linkedin_url'),
             'github_url' => $request->input('github_url'),
-            'portfolio_links_json' => $request->input('portfolio_links', []),
+            'portfolio_links_json' => $portfolioLinks,
         ]);
 
         if ($request->hasFile('cv_path')) {
@@ -403,6 +409,15 @@ class CandidateOnboardingController extends Controller
     private function categoriesForStep(int $step): array
     {
         return self::STEP_CATEGORIES[$step] ?? [];
+    }
+
+    private function blocksOnboardingReentry(User $user): bool
+    {
+        if (! $user->onboarding_completed) {
+            return false;
+        }
+
+        return app(ProfileCompletionService::class)->complete($user);
     }
 
     private function syncTemperamentFromProfile($user): void

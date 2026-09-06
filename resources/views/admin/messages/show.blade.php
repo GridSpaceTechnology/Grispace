@@ -26,7 +26,7 @@
         <div class="p-4 border-b border-slate-100 bg-slate-50">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4 text-sm text-slate-600">
-                    <span><strong class="text-slate-700">Created:</strong> {{ $conversation->created_at->format('M d, Y g:i A') }}</span>
+                    <span><strong class="text-slate-700">Created:</strong> {{ $conversation->created_at?->format('M d, Y g:i A') ?? 'N/A' }}</span>
                     <span><strong class="text-slate-700">Messages:</strong> {{ $messages->total() }}</span>
                     <span><strong class="text-slate-700">Last activity:</strong> {{ $conversation->last_message_at?->diffForHumans() ?? 'N/A' }}</span>
                 </div>

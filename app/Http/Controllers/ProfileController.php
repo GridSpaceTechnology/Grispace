@@ -38,10 +38,29 @@ class ProfileController extends Controller
 
         if ($request->hasFile('profile_photo')) {
             if ($user->profile_photo_path) {
-                Storage::disk('public')->delete($user->profile_photo_path);
+                try {
+                    Storage::disk('public')->delete($user->profile_photo_path);
+                } catch (\Throwable $e) {
+                    report($e);
+                }
             }
 
-            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            try {
+                $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            } catch (\Throwable $e) {
+                report($e);
+
+                return Redirect::route('profile.edit')->withErrors([
+                    'profile_photo' => __('There was a problem saving your profile picture. Please try again.'),
+                ]);
+            }
+
+            if ($path === false) {
+                return Redirect::route('profile.edit')->withErrors([
+                    'profile_photo' => __('There was a problem saving your profile picture. Please try again.'),
+                ]);
+            }
+
             $user->profile_photo_path = $path;
         }
 
@@ -51,7 +70,7 @@ class ProfileController extends Controller
             app(ProfileCompletionService::class)->sync($user);
         }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return back()->with('status', 'profile-updated');
     }
 
     /**
@@ -62,7 +81,12 @@ class ProfileController extends Controller
         $user = $request->user();
 
         if ($user->profile_photo_path) {
-            Storage::disk('public')->delete($user->profile_photo_path);
+            try {
+                Storage::disk('public')->delete($user->profile_photo_path);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+
             $user->profile_photo_path = null;
             $user->save();
 
@@ -71,7 +95,7 @@ class ProfileController extends Controller
             }
         }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return back()->with('status', 'profile-updated');
     }
 
     public function destroy(Request $request): RedirectResponse

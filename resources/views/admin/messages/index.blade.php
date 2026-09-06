@@ -86,7 +86,7 @@
                                 <span class="text-sm text-slate-700">{{ $conversation->messages_count ?? $conversation->messages()->count() }}</span>
                             </td>
                             <td class="px-4 py-4">
-                                <span class="text-sm text-slate-500">{{ $conversation->created_at->format('M d, Y') }}</span>
+                                <span class="text-sm text-slate-500">{{ $conversation->created_at?->format('M d, Y') ?? 'N/A' }}</span>
                             </td>
                             <td class="px-4 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">

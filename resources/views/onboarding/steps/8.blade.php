@@ -75,6 +75,15 @@
                         </div>
 
                         <div>
+                            <label for="portfolio_url" class="block text-sm font-medium text-gray-700 mb-2">Portfolio / Website URL</label>
+                            <input type="url" name="portfolio_url" id="portfolio_url"
+                                   value="{{ old('portfolio_url', $media?->portfolio_primary_url) }}"
+                                   placeholder="https://myportfolio.com"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <p class="mt-1 text-sm text-gray-500">Link to your portfolio, personal website, or showcase your work</p>
+                        </div>
+
+                        <div>
                             <label for="github_url" class="block text-sm font-medium text-gray-700 mb-2">GitHub URL</label>
                             <input type="url" name="github_url" id="github_url"
                                    value="{{ old('github_url', $media?->github_url) }}"

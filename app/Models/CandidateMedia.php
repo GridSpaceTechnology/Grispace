@@ -28,4 +28,11 @@ class CandidateMedia extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getPortfolioPrimaryUrlAttribute(): ?string
+    {
+        $links = is_array($this->portfolio_links_json) ? $this->portfolio_links_json : [];
+
+        return $links[0] ?? null;
+    }
 }

@@ -56,6 +56,7 @@ class CandidateDashboardController extends Controller
             'profileCompletion' => $completion,
             'profileCompletionItems' => $completionService->items($user),
             'profileComplete' => $completionService->complete($user),
+            'nextOnboardingStep' => $completionService->firstIncompleteStep($user),
         ]);
     }
 

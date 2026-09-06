@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+@php($user = auth()->user())
 <div class="min-h-screen bg-slate-50 py-12">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-8">
@@ -14,31 +15,15 @@
             </div>
         @endif
 
-        <div class="mb-8 bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <div class="flex items-center justify-between mb-2">
-                <p class="font-semibold text-slate-900">Profile Completion</p>
-                <p class="text-xl font-bold text-brand-primary">{{ $profileCompletion }}%</p>
-            </div>
-            <x-progress-bar :value="$profileCompletion" size="sm" />
-            <ul class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                @foreach($profileCompletionItems as $item)
-                    <li class="flex items-center gap-2 text-sm {{ $item['earned'] ? 'text-slate-700' : 'text-slate-400' }}">
-                        @if($item['earned'])
-                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        @else
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        @endif
-                        {{ $item['label'] }}
-                    </li>
-                @endforeach
-            </ul>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            @include('profile.partials.update-profile-information-form')
         </div>
 
-        <form method="POST" action="{{ route('candidate.profile.update') }}" enctype="multipart/form-data" class="space-y-8">
+        <div class="mt-8 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            @include('profile.partials.update-password-form')
+        </div>
+
+        <form method="POST" action="{{ route('candidate.profile.update') }}" enctype="multipart/form-data" class="space-y-8 mt-8">
             @csrf
             @method('PATCH')
 
@@ -139,7 +124,13 @@
                     </div>
 
                     <div>
-                        <label for="github_url" class="block text-sm font-medium text-slate-700 mb-1">GitHub / Portfolio URL</label>
+                        <label for="portfolio_url" class="block text-sm font-medium text-slate-700 mb-1">Portfolio / Website URL</label>
+                        <input type="url" name="portfolio_url" id="portfolio_url" value="{{ old('portfolio_url', $media?->portfolio_primary_url) }}"
+                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="github_url" class="block text-sm font-medium text-slate-700 mb-1">GitHub URL</label>
                         <input type="url" name="github_url" id="github_url" value="{{ old('github_url', $media?->github_url) }}"
                             class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                     </div>

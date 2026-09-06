@@ -132,7 +132,7 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
     Route::get('/candidate/resume/download', [CandidateResumeController::class, 'download'])
         ->name('candidate.resume.download');
     Route::get('/candidate/resume/view', [CandidateResumeController::class, 'show'])
-        ->name('candidate.resume.show');
+        ->name('candidate.resume.view');
 
     Route::get('/candidate/recommended-jobs', [CandidateRecommendationController::class, 'index'])
         ->name('candidate.recommended-jobs');

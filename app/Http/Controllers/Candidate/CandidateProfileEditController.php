@@ -17,16 +17,10 @@ class CandidateProfileEditController extends Controller
     public function edit(Request $request): View
     {
         $user = $request->user();
-        $profile = $user->candidateProfile ?? null;
-        $media = $user->candidateMedia ?? null;
-
-        $completionService = app(ProfileCompletionService::class);
 
         return view('candidate.profile.edit', [
-            'profile' => $profile,
-            'media' => $media,
-            'profileCompletion' => $completionService->percentage($user),
-            'profileCompletionItems' => $completionService->items($user),
+            'profile' => $user->candidateProfile ?? null,
+            'media' => $user->candidateMedia ?? null,
         ]);
     }
 
@@ -45,6 +39,7 @@ class CandidateProfileEditController extends Controller
             'greatest_achievement' => 'nullable|string',
             'linkedin_url' => 'nullable|url|max:255',
             'github_url' => 'nullable|url|max:255',
+            'portfolio_url' => 'nullable|url|max:255',
             'role_video_url' => 'nullable|url|max:255',
             'resume' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ]);
@@ -54,12 +49,20 @@ class CandidateProfileEditController extends Controller
             $validated
         );
 
+        $portfolioLinks = $validated['portfolio_url'] ?? null
+            ? [$validated['portfolio_url']]
+            : [];
+
+        $existingMedia = $user->candidateMedia;
+
         $media = CandidateMedia::updateOrCreate(
             ['user_id' => $user->id],
             [
-                'linkedin_url' => $validated['linkedin_url'] ?? null,
-                'github_url' => $validated['github_url'] ?? null,
-                'role_video_url' => $validated['role_video_url'] ?? null,
+                'linkedin_url' => $validated['linkedin_url'] ?? $existingMedia?->linkedin_url,
+                'github_url' => $validated['github_url'] ?? $existingMedia?->github_url,
+                'role_video_url' => $validated['role_video_url'] ?? ($existingMedia?->role_video_url ?? ''),
+                'portfolio_links_json' => $portfolioLinks,
+                'cv_path' => $existingMedia?->cv_path ?? '',
             ]
         );
 
