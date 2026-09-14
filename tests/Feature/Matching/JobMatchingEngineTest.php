@@ -142,12 +142,15 @@ it('rewards meeting the experience requirement and flags shortfalls', function (
         ->and($belowScore)->toBeLessThan(60);
 });
 
-it('never punishes roles without experience requirements', function () {
+it('excludes experience from scoring when the role sets no experience requirement', function () {
     $engine = app(JobMatchingService::class);
     $candidate = matchingCandidate(['years_of_experience' => 0]);
     $job = matchJob(matchingEmployer(), ['minimum_experience' => 0]);
 
-    expect($engine->scoreExperience($candidate, $job)['score'])->toBe(100);
+    $result = $engine->scoreExperience($candidate, $job);
+
+    expect($result['applicable'])->toBeFalse()
+        ->and($result['score'])->toBe(config('matching.neutral_score'));
 });
 
 it('matches temperament when the assessment aligns with the job preference', function () {
@@ -190,13 +193,15 @@ it('gracefully handles non-standard job temperament preferences', function () {
         ->toBe(50);
 });
 
-it('uses a neutral work-style score without a completed assessment', function () {
+it('uses a neutral work-style score without a completed assessment and marks it inapplicable', function () {
     $engine = app(JobMatchingService::class);
     $candidate = matchingCandidate();
     $job = matchJob(matchingEmployer(), ['temperament_preference' => 'analytical']);
 
-    expect($engine->scorePersonality($candidate, $job)['score'])
-        ->toBe(config('matching.neutral_score'));
+    $result = $engine->scorePersonality($candidate, $job);
+
+    expect($result['score'])->toBe(config('matching.neutral_score'))
+        ->and($result['applicable'])->toBeFalse();
 });
 
 it('frames personality results as work-style compatibility, never verdicts', function () {
@@ -295,18 +300,256 @@ it('awards education only against stated requirements', function () {
         'is_mandatory' => true,
     ]);
 
-    expect($engine->scoreEducation($graduate, $jobWithoutRequirement)['score'])->toBe(100)
-        ->and($engine->scoreEducation($noDegree, $jobWithRequirement)['score'])
-        ->toBe(config('matching.neutral_score'));
+    $noRequirement = $engine->scoreEducation($graduate, $jobWithoutRequirement);
+
+    expect($noRequirement['score'])->toBe(config('matching.neutral_score'))
+        ->and($noRequirement['applicable'])->toBeFalse();
+
+    $noDegreeResult = $engine->scoreEducation($noDegree, $jobWithRequirement);
+
+    expect($noDegreeResult['score'])->toBe(20)
+        ->and($noDegreeResult['applicable'])->toBeTrue();
 });
 
-it('returns a neutral availability score until availability data exists', function () {
+it('returns a neutral availability score only when the job sets no start-date requirement', function () {
     $engine = app(JobMatchingService::class);
     $candidate = matchingCandidate();
     $job = matchJob(matchingEmployer());
 
-    expect($engine->scoreAvailability($candidate, $job)['score'])
-        ->toBe(config('matching.neutral_score'));
+    $result = $engine->scoreAvailability($candidate, $job);
+
+    expect($result['score'])->toBe(config('matching.neutral_score'))
+        ->and($result['applicable'])->toBeFalse();
+
+    $job->jobRequirements()->create([
+        'requirement_type' => 'availability',
+        'requirement_value' => 'immediately',
+        'is_mandatory' => true,
+    ]);
+
+    $lowResult = $engine->scoreAvailability($candidate->refresh(), $job->refresh());
+
+    expect($lowResult['score'])->toBe(20)
+        ->and($lowResult['applicable'])->toBeTrue();
+});
+
+it('gives a high score when a software engineer matches a software engineering job', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(['desired_role' => 'Software Engineer'], ['PHP', 'Laravel']);
+    $job = matchJob(matchingEmployer(), [
+        'title' => 'Senior Software Engineer',
+        'role' => 'Engineering',
+        'minimum_experience' => 3,
+        'required_skills_json' => ['PHP', 'Laravel'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    expect($breakdown['domain_compatible'])->toBeTrue()
+        ->and($breakdown['overall_score'])->toBeGreaterThanOrEqual(90);
+});
+
+it('gives a strong score for a Laravel developer applying to a backend role', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(['desired_role' => 'Laravel Developer'], ['Laravel', 'MySQL']);
+    $job = matchJob(matchingEmployer(), [
+        'minimum_experience' => 3,
+        'required_skills_json' => ['Laravel', 'MySQL'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    expect($breakdown['candidate_domain'])->toBe(config('professional_domains.domains.technology.label'))
+        ->and($breakdown['job_domain'])->toBe(config('professional_domains.domains.technology.label'))
+        ->and($breakdown['domain_compatible'])->toBeTrue()
+        ->and($breakdown['overall_score'])->toBeGreaterThanOrEqual(80);
+});
+
+it('collapse the overall score when a software engineer applies to an accounting role', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(['desired_role' => 'Software Engineer'], ['PHP', 'Laravel']);
+    $job = matchJob(matchingEmployer(), [
+        'title' => 'Accountant',
+        'role' => 'Accounting',
+        'required_skills_json' => ['Accounting', 'Auditing'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    expect($breakdown['domain_compatible'])->toBeFalse()
+        ->and($breakdown['candidate_domain'])->toBe(config('professional_domains.domains.technology.label'))
+        ->and($breakdown['job_domain'])->toBe(config('professional_domains.domains.finance.label'))
+        ->and($breakdown['components']['role']['score'])->toBe(10)
+        ->and($breakdown['overall_score'])->toBe(config('matching.domain_gate_cap'));
+});
+
+it('scores a same-domain accountancy-to-analyst switch strongly when skills align', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(['desired_role' => 'Accountant'], ['Accounting', 'Analysis']);
+    $job = matchJob(matchingEmployer(), [
+        'title' => 'Financial Analyst',
+        'role' => 'Finance',
+        'minimum_experience' => 2,
+        'required_skills_json' => ['Accounting', 'Analysis'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    expect($breakdown['candidate_domain'])->toBe(config('professional_domains.domains.finance.label'))
+        ->and($breakdown['domain_compatible'])->toBeTrue()
+        ->and($breakdown['overall_score'])->toBeGreaterThanOrEqual(80);
+});
+
+it('gates unrelated creative-to-finance moves instead of letting preferences rescue them', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(['desired_role' => 'Graphic Designer'], ['Photoshop']);
+    $job = matchJob(matchingEmployer(), [
+        'title' => 'Accountant',
+        'role' => 'Accounting',
+        'required_skills_json' => ['Accounting'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    expect($breakdown['domain_compatible'])->toBeFalse()
+        ->and($breakdown['overall_score'])->toBeLessThanOrEqual(config('matching.domain_gate_cap'));
+});
+
+it('does not inflate candidates with no skills against a skills-heavy job', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate();
+    $job = matchJob(matchingEmployer());
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    expect($breakdown['components']['skills']['score'])->toBe(0)
+        ->and($breakdown['components']['skills']['applicable'])->toBeTrue()
+        ->and($breakdown['overall_score'])->toBeLessThanOrEqual(60);
+});
+
+it('does not award education points when the job sets no education requirement', function () {
+    $engine = app(JobMatchingService::class);
+    $graduate = matchingCandidate();
+    CandidateEducation::create([
+        'user_id' => $graduate->id,
+        'institution' => 'UNILAG',
+        'qualification' => "Bachelor's Degree",
+        'year_completed' => 2020,
+    ]);
+    $job = matchJob(matchingEmployer());
+
+    $breakdown = $engine->calculateBreakdown($graduate, $job);
+
+    expect($breakdown['components']['education']['applicable'])->toBeFalse()
+        ->and($breakdown['components']['education']['score'])->toBe(config('matching.neutral_score'));
+});
+
+it('does not award personality points when the job states no preferences', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate();
+
+    CandidatePersonalityProfile::create([
+        'candidate_id' => $candidate->id,
+        'temperament_type' => 'Analytical',
+        'assessment_completed' => true,
+    ]);
+
+    $job = matchJob(matchingEmployer());
+
+    $breakdown = $engine->calculateBreakdown($candidate->refresh(), $job);
+
+    expect($breakdown['components']['personality']['applicable'])->toBeFalse()
+        ->and($breakdown['components']['personality']['score'])->toBe(config('matching.neutral_score'));
+});
+
+it('blocks matches even when skills align perfectly across domains', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(['desired_role' => 'Software Engineer'], ['PHP', 'Laravel']);
+    $job = matchJob(matchingEmployer(), [
+        'title' => 'Accountant',
+        'role' => 'Accounting',
+        'required_skills_json' => ['PHP', 'Laravel'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    expect($breakdown['components']['skills']['score'])->toBe(100)
+        ->and($breakdown['domain_compatible'])->toBeFalse()
+        ->and($breakdown['overall_score'])->toBe(config('matching.domain_gate_cap'));
+});
+
+it('reduces strong role matches when required skills are missing', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(skills: ['PHP']);
+    $job = matchJob(matchingEmployer(), [
+        'minimum_experience' => 2,
+        'required_skills_json' => ['PHP', 'Laravel', 'MySQL', 'Docker'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    expect($breakdown['components']['role']['score'])->toBe(100)
+        ->and($breakdown['components']['skills']['score'])->toBeLessThan(50)
+        ->and($breakdown['overall_score'])->toBeLessThan(85);
+});
+
+it('combines a compatible role and matching skills into a strong overall', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(['desired_role' => 'Full Stack Developer'], ['PHP', 'JavaScript', 'MySQL']);
+    $job = matchJob(matchingEmployer(), [
+        'title' => 'Full Stack Developer',
+        'role' => 'Software Development',
+        'minimum_experience' => 3,
+        'required_skills_json' => ['PHP', 'JavaScript', 'MySQL'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    expect($breakdown['domain_compatible'])->toBeTrue()
+        ->and($breakdown['overall_score'])->toBeGreaterThanOrEqual(85);
+});
+
+it('does not let a perfectly compatible personality rescue an unrelated domain', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(['desired_role' => 'Accountant'], ['Bookkeeping']);
+
+    CandidatePersonalityProfile::create([
+        'candidate_id' => $candidate->id,
+        'temperament_type' => 'Analytical',
+        'assessment_completed' => true,
+    ]);
+
+    $job = matchJob(matchingEmployer(), [
+        'title' => 'Senior Software Engineer',
+        'role' => 'Software Development',
+        'temperament_preference' => 'analytical',
+        'required_skills_json' => ['PHP', 'Laravel'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate->refresh(), $job);
+
+    expect($breakdown['components']['personality']['score'])->toBe(100)
+        ->and($breakdown['domain_compatible'])->toBeFalse()
+        ->and($breakdown['overall_score'])->toBe(config('matching.domain_gate_cap'));
+});
+
+it('computes the overall score from applicable components only when data is partial', function () {
+    $engine = app(JobMatchingService::class);
+    $candidate = matchingCandidate(['salary_expectation' => null, 'work_preference' => null], ['PHP']);
+    $job = matchJob(matchingEmployer(), [
+        'salary_min' => null,
+        'salary_max' => null,
+        'required_skills_json' => ['PHP', 'Laravel', 'MySQL', 'Docker'],
+    ]);
+
+    $breakdown = $engine->calculateBreakdown($candidate, $job);
+
+    $applicable = collect($breakdown['components'])->filter(fn ($c) => $c['applicable'])->keys()->all();
+
+    expect($applicable)->toBe(['skills', 'role'])
+        ->and($breakdown['components']['skills']['score'])->toBe(25)
+        ->and($breakdown['components']['role']['score'])->toBe(100)
+        ->and($breakdown['overall_score'])->toBe(55);
 });
 
 it('produces an overall score within bounds with a category label', function () {

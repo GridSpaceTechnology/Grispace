@@ -30,10 +30,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @forelse($interviews as $interview)
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                    <div class="flex items-start justify-between mb-3">
+                <div class="relative bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+                    <a href="{{ route('jobs.show', $interview->job) }}" class="absolute inset-0 rounded-xl z-10" aria-label="View {{ $interview->job->title }}"></a>
+                    <div class="relative flex items-start justify-between mb-3">
                         <div>
-                            <h3 class="font-semibold text-slate-900">{{ $interview->job->title }}</h3>
+                            <h3 class="font-semibold text-slate-900 group-hover:text-brand-primary transition-colors">{{ $interview->job->title }}</h3>
                             <p class="text-sm text-slate-500">
                                 {{ $interview->employer->employerProfile?->company_name ?? $interview->employer->name }}
                             </p>
@@ -41,12 +42,12 @@
                         @php
                             $status = $statusConfig[$interview->status] ?? $statusConfig['scheduled'];
                         @endphp
-                        <span class="px-2 py-1 {{ $status['bg'] }} {{ $status['text'] }} text-xs font-medium rounded-full">
+                        <span class="relative z-20 px-2 py-1 {{ $status['bg'] }} {{ $status['text'] }} text-xs font-medium rounded-full">
                             {{ $status['label'] }}
                         </span>
                     </div>
 
-                    <div class="space-y-2 text-sm text-slate-600 mb-4">
+                    <div class="relative space-y-2 text-sm text-slate-600 mb-4">
                         <div class="flex items-center gap-2">
                             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -69,7 +70,7 @@
 
                     @if($interview->meeting_link && $interview->status === 'scheduled')
                         <a href="{{ $interview->meeting_link }}" target="_blank" 
-                            class="block w-full text-center px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover transition-colors mb-2">
+                            class="relative z-20 block w-full text-center px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover transition-colors mb-2">
                             Join Interview
                         </a>
                     @endif

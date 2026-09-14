@@ -54,13 +54,39 @@ return [
     | Missing Data Policy
     |--------------------------------------------------------------------------
     |
-    | When either side is missing data for a component (no assessment, no
-    | salary expectation, etc.) the component receives this neutral score
-    | instead of a punitive zero, and the breakdown explains why.
+    | Components with missing data on either side are excluded from the
+    | weighted calculation rather than receiving a neutral score. When a
+    | truly neutral score is needed as a fallback, this value is used.
     |
     */
 
-    'neutral_score' => 75,
+    'neutral_score' => 50,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Domain Compatibility Gate
+    |--------------------------------------------------------------------------
+    |
+    | When the candidate and job belong to different professional domains
+    | (e.g. Software Engineer applying to an Accountant role), the overall
+    | score is capped at this value so that secondary factors (personality,
+    | work preference, salary, etc.) cannot rescue an unrelated match.
+    |
+    */
+
+    'domain_gate_cap' => 15,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Base Salary Currency
+    |--------------------------------------------------------------------------
+    |
+    | Candidate salary expectations carry no currency; they are compared
+    | against jobs listed in this market currency only.
+    |
+    */
+
+    'base_salary_currency' => 'NGN',
 
     /*
     |--------------------------------------------------------------------------

@@ -119,10 +119,11 @@
                     @else
                         <div class="space-y-4">
                             @foreach($matchingJobs as $match)
-                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                    <div class="flex justify-between items-start">
+                                <div class="relative border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group">
+                                    <a href="{{ route('jobs.show', $match['job']) }}" class="absolute inset-0 rounded-lg z-10" aria-label="View {{ $match['job']->title }}"></a>
+                                    <div class="flex justify-between items-start relative">
                                         <div>
-                                            <h3 class="font-medium text-gray-900">{{ $match['job']->title }}</h3>
+                                            <h3 class="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">{{ $match['job']->title }}</h3>
                                             <p class="text-sm text-gray-500">{{ $match['job']->company?->name ?? $match['job']->employer->name ?? 'Company' }}</p>
                                         </div>
                                         <div class="text-right">
@@ -135,7 +136,7 @@
                                         <span class="bg-gray-100 px-2 py-1 rounded">{{ $match['job']->employment_type }}</span>
                                         <span class="bg-gray-100 px-2 py-1 rounded">{{ $match['job']->work_preference }}</span>
                                     </div>
-                                    <div class="mt-3">
+                                    <div class="mt-3 relative z-20">
                                         <form method="POST" action="{{ route('candidate.jobs.apply', ['job' => $match['job']->id]) }}">
                                             @csrf
                                             <button type="submit" class="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
@@ -161,10 +162,11 @@
                             @foreach($recommendedJobs as $match)
                                 @php $job = $match['job'] ?? null; @endphp
                                 @if($job)
-                                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                        <div class="flex justify-between items-start">
+                                    <div class="relative border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group">
+                                        <a href="{{ route('jobs.show', $job) }}" class="absolute inset-0 rounded-lg z-10" aria-label="View {{ $job->title }}"></a>
+                                        <div class="flex justify-between items-start relative">
                                             <div>
-                                                <h3 class="font-medium text-gray-900">{{ $job->title }}</h3>
+                                                <h3 class="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">{{ $job->title }}</h3>
                                                 <p class="text-sm text-gray-500">{{ $job->company?->name ?? 'Company' }}</p>
                                             </div>
                                             <div class="text-right">
@@ -177,7 +179,7 @@
                                             <span class="text-blue-600">Personality {{ $match['personality_fit_score'] ?? 0 }}%</span>
                                             <span class="text-purple-600">Culture {{ $match['culture_fit_score'] ?? 0 }}%</span>
                                         </div>
-                                        <div class="mt-3">
+                                        <div class="mt-3 relative z-20">
                                             <a href="{{ route('jobs.show', $job) }}" class="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
                                                 View Job
                                             </a>
@@ -200,13 +202,14 @@
                     @else
                         <div class="space-y-4">
                             @foreach($applications as $application)
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <div class="flex justify-between items-start">
+                                <div class="relative border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group">
+                                    <a href="{{ route('jobs.show', $application->job) }}" class="absolute inset-0 rounded-lg z-10" aria-label="View {{ $application->job->title }}"></a>
+                                    <div class="relative flex justify-between items-start">
                                         <div>
-                                            <h3 class="font-medium text-gray-900">{{ $application->job->title }}</h3>
+                                            <h3 class="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">{{ $application->job->title }}</h3>
                                             <p class="text-sm text-gray-500">{{ $application->job->company?->name ?? $application->job->employer->name ?? 'Company' }}</p>
                                         </div>
-                                        <span class="px-2.5 py-1 text-xs font-medium rounded-full 
+                                        <span class="relative z-20 px-2.5 py-1 text-xs font-medium rounded-full 
                                             @switch($application->status)
                                                 @case('applied') bg-blue-100 text-blue-800 @break
                                                 @case('shortlisted') bg-purple-100 text-purple-800 @break

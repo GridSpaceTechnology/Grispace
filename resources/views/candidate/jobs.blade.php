@@ -31,15 +31,16 @@
         @else
             <div class="space-y-4">
                 @foreach($jobs as $match)
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-                        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div class="relative bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 group">
+                        <a href="{{ route('jobs.show', $match['job']) }}" class="absolute inset-0 rounded-xl z-10" aria-label="View {{ $match['job']->title }}"></a>
+                        <div class="relative flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                             <div class="flex-1">
                                 <div class="flex items-start gap-4">
                                     <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <span class="text-indigo-600 font-semibold text-lg">{{ substr($match['job']->company?->name ?? $match['job']->employer->name ?? 'C', 0, 1) }}</span>
                                     </div>
                                     <div>
-                                        <h2 class="text-xl font-semibold text-gray-900">{{ $match['job']->title }}</h2>
+                                        <h2 class="text-xl font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{{ $match['job']->title }}</h2>
                                         <p class="text-gray-600">
                                             {{ $match['job']->company?->name ?? $match['job']->employer->name ?? 'Company' }}
                                             @if($match['job']->company?->is_verified)
@@ -106,7 +107,7 @@
                                     <div class="text-3xl font-bold text-indigo-600">{{ $match['match_percentage'] }}%</div>
                                     <div class="text-xs text-gray-500">match score</div>
                                 </div>
-                                <form method="POST" action="{{ route('candidate.jobs.apply', ['job' => $match['job']->id]) }}">
+                                <form method="POST" action="{{ route('candidate.jobs.apply', ['job' => $match['job']->id]) }}" class="relative z-20">
                                     @csrf
                                     <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
                                         Apply Now

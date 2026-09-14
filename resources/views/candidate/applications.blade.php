@@ -22,10 +22,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @forelse($applications as $application)
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                    <div class="flex items-start justify-between mb-3">
+                <div class="relative bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+                    <a href="{{ route('jobs.show', $application->job) }}" class="absolute inset-0 rounded-xl z-10" aria-label="View {{ $application->job->title }}"></a>
+                    <div class="relative flex items-start justify-between mb-3">
                         <div>
-                            <h3 class="font-semibold text-slate-900">{{ $application->job->title }}</h3>
+                            <h3 class="font-semibold text-slate-900 group-hover:text-brand-primary transition-colors">{{ $application->job->title }}</h3>
                             <p class="text-sm text-slate-500">
                                 {{ $application->job->employer->company_name }}
                                 @if($application->job->employer->company?->is_verified)
@@ -46,7 +47,7 @@
                             ];
                             $status = $statusConfig[$application->status] ?? $statusConfig['applied'];
                         @endphp
-                        <span class="px-2 py-1 {{ $status['bg'] }} {{ $status['text'] }} text-xs font-medium rounded-full">
+                        <span class="relative z-20 px-2 py-1 {{ $status['bg'] }} {{ $status['text'] }} text-xs font-medium rounded-full">
                             {{ $status['label'] }}
                         </span>
                     </div>
@@ -69,9 +70,9 @@
                         </div>
                     @endif
 
-                    <div class="flex items-center justify-between text-xs text-slate-400">
+                    <div class="relative flex items-center justify-between text-xs text-slate-400">
                         <span>Applied {{ $application->applied_at?->diffForHumans() ?? $application->created_at->diffForHumans() }}</span>
-                        <a href="{{ route('employer.jobs.show', ['job' => $application->job->id]) }}" class="text-brand-primary hover:text-brand-primary-hover">
+                        <a href="{{ route('jobs.show', $application->job) }}" class="relative z-20 text-brand-primary hover:text-brand-primary-hover">
                             View Job →
                         </a>
                     </div>

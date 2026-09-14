@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EmployerCultureProfile;
 use App\Models\Job;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -14,8 +15,12 @@ use Illuminate\Support\Str;
  *
  * Produces an explainable 0-100 compatibility score between a candidate and
  * a job using eight weighted components configured in config/matching.php.
- * Missing data always yields a neutral score rather than a punitive one,
- * and every component returns human-readable reasons and gaps.
+ *
+ * Professional domain compatibility acts as a hard gate: candidates and jobs
+ * from unrelated domains can never exceed the domain_gate_cap. Components with
+ * missing data on either side are excluded from the weighted calculation
+ * (not rewarded with high neutral scores). Every component returns
+ * human-readable reasons and gaps plus an "applicable" flag.
  */
 class JobMatchingService
 {
@@ -33,7 +38,10 @@ class JobMatchingService
      * @return array{
      *     overall_score: int,
      *     category: string,
-     *     components: array<string, array{score: int, label: string, reasons: array, gaps: array}>,
+     *     domain_compatible: bool,
+     *     candidate_domain: ?string,
+     *     job_domain: ?string,
+     *     components: array<string, array{score: int, label: string, reasons: array, gaps: array, applicable: bool}>,
      *     matched_skills: array,
      *     missing_skills: array,
      *     strengths: array,
@@ -55,16 +63,39 @@ class JobMatchingService
         ];
 
         $weighted = 0;
+        $totalWeight = 0;
 
         foreach ($components as $key => $component) {
-            $weighted += $component['score'] * ($this->weight($key) / 100);
+            $weight = $this->weight($key);
+
+            if ($component['applicable'] && $weight > 0) {
+                $weighted += $component['score'] * $weight;
+                $totalWeight += $weight;
+            }
         }
 
-        $overall = (int) round(max(0, min(100, $weighted)));
+        $overall = $totalWeight > 0 ? (int) round($weighted / $totalWeight) : 0;
+
+        $candidateDomain = $this->getDomain($candidate->candidateProfile?->desired_role ?? '');
+        $jobDomain = $this->getDomain(trim(($job->title ?? '').' '.($job->role ?? '')));
+        $domainCompatible = $this->isDomainCompatible($candidateDomain, $jobDomain);
+
+        if ($candidateDomain !== null && $jobDomain !== null && ! $domainCompatible) {
+            $overall = min($overall, (int) config('matching.domain_gate_cap', 15));
+        }
+
+        $overall = max(0, min(100, $overall));
 
         return [
             'overall_score' => $overall,
             'category' => $this->categoryFor($overall),
+            'domain_compatible' => $domainCompatible,
+            'candidate_domain' => $candidateDomain
+                ? config("professional_domains.domains.{$candidateDomain}.label", $candidateDomain)
+                : null,
+            'job_domain' => $jobDomain
+                ? config("professional_domains.domains.{$jobDomain}.label", $jobDomain)
+                : null,
             'components' => $components,
             'matched_skills' => $this->skillNames($components['skills']['details']['matched'] ?? []),
             'missing_skills' => $this->skillNames($components['skills']['details']['missing'] ?? []),
@@ -72,6 +103,69 @@ class JobMatchingService
             'gaps' => $this->collectGaps($components),
             'reasons' => $this->collectReasons($components),
         ];
+    }
+
+    /**
+     * Determine the professional domain of a role string using the
+     * config/professional_domains.php taxonomy. Returns null when the role is
+     * empty or ambiguous (tied scores across domains).
+     */
+    public function getDomain(?string $role): ?string
+    {
+        if ($role === null || trim($role) === '') {
+            return null;
+        }
+
+        $normalized = strtolower(trim($role));
+        $domains = config('professional_domains.domains', []);
+
+        $scores = [];
+
+        foreach ($domains as $key => $domain) {
+            $score = 0;
+
+            foreach ($domain['keywords'] as $keyword) {
+                if (str_contains($normalized, $keyword)) {
+                    $score += str_word_count($keyword) >= 2 ? 3 : 1;
+                }
+            }
+
+            if ($score > 0) {
+                $scores[$key] = $score;
+            }
+        }
+
+        if ($scores === []) {
+            return null;
+        }
+
+        arsort($scores);
+        $topDomain = array_key_first($scores);
+        $topScore = $scores[$topDomain];
+
+        $secondScore = 0;
+
+        foreach ($scores as $key => $score) {
+            if ($key !== $topDomain) {
+                $secondScore = $score;
+                break;
+            }
+        }
+
+        return $topScore > $secondScore ? $topDomain : null;
+    }
+
+    /**
+     * Two domains are compatible when matchable. An unknown domain on either
+     * side never triggers the hard gate, since we cannot prove incompatibility.
+     */
+    private function isDomainCompatible(?string $candidateDomain, ?string $jobDomain): bool
+    {
+        if ($candidateDomain === null || $jobDomain === null) {
+            return true;
+        }
+
+        return $candidateDomain === $jobDomain;
     }
 
     public function categoryFor(int $score): string
@@ -175,7 +269,7 @@ class JobMatchingService
     // ------------------------------------------------------------------
 
     /**
-     * @return array{score: int, label: string, reasons: array, gaps: array, details: array}
+     * @return array{score: int, label: string, reasons: array, gaps: array, details: array, applicable: bool}
      */
     public function scoreSkills(User $candidate, Job $job): array
     {
@@ -194,23 +288,39 @@ class JobMatchingService
             ->sortByDesc('is_required')
             ->values();
 
+        $requiredSkillsJson = $job->getRequiredSkills();
+
+        // No skill requirements at all on the job side: the skills component
+        // is not applicable rather than rewarded with a neutral score.
+        if ($jobSkills->isEmpty() && empty($requiredSkillsJson)) {
+            return [
+                'score' => 0,
+                'label' => 'Skills',
+                'reasons' => [],
+                'gaps' => [],
+                'details' => ['matched' => [], 'missing' => []],
+                'applicable' => false,
+            ];
+        }
+
         // Fall back to the free-text required skills list when no normalized
         // job skills have been attached to the listing.
         if ($jobSkills->isEmpty()) {
             return $this->scoreSkillsFromNames(
                 $candidate->candidateSkills()->get(),
-                $job->getRequiredSkills(),
+                $requiredSkillsJson,
                 $config
             );
         }
 
         if ($candidateSkills->isEmpty()) {
             return [
-                'score' => $this->neutral(),
+                'score' => 0,
                 'label' => 'Skills',
                 'reasons' => [],
                 'gaps' => ['Your skill list is empty - add your skills to improve matching accuracy.'],
                 'details' => ['matched' => [], 'missing' => $jobSkills->map(fn ($js) => $js->skill?->name ?? (string) $js->skill_id)->all()],
+                'applicable' => true,
             ];
         }
 
@@ -287,6 +397,7 @@ class JobMatchingService
             'reasons' => $reasons,
             'gaps' => $gaps,
             'details' => ['matched' => $matched, 'missing' => $missing],
+            'applicable' => true,
         ];
     }
 
@@ -296,11 +407,12 @@ class JobMatchingService
 
         if ($requiredNames === []) {
             return [
-                'score' => $this->neutral(),
+                'score' => 0,
                 'label' => 'Skills',
                 'reasons' => [],
                 'gaps' => [],
                 'details' => ['matched' => [], 'missing' => []],
+                'applicable' => false,
             ];
         }
 
@@ -329,6 +441,7 @@ class JobMatchingService
             'reasons' => $ratio === 1.0 ? ['All required skills are present'] : [count($matched).' of '.count($requiredNames).' required skills matched'],
             'gaps' => collect($missing)->pluck('name')->map(fn ($n) => "Missing required skill: {$n}")->all(),
             'details' => ['matched' => $matched, 'missing' => $missing],
+            'applicable' => true,
         ];
     }
 
@@ -337,13 +450,43 @@ class JobMatchingService
         $desired = trim((string) ($candidate->candidateProfile?->desired_role ?? ''));
 
         if ($desired === '') {
-            return $this->neutralResult('Role Alignment', [], ['Add your desired role to see how well positions align with your goals.']);
+            return [
+                'score' => $this->neutral(),
+                'label' => 'Role Alignment',
+                'reasons' => [],
+                'gaps' => ['Add your desired role to see how well positions align with your goals.'],
+                'applicable' => false,
+            ];
         }
 
         $jobText = trim(($job->title ?? '').' '.($job->role ?? ''));
 
         if ($jobText === '') {
-            return $this->neutralResult('Role Alignment');
+            return [
+                'score' => $this->neutral(),
+                'label' => 'Role Alignment',
+                'reasons' => [],
+                'gaps' => [],
+                'applicable' => false,
+            ];
+        }
+
+        // Cross-domain roles are fundamentally incompatible: return a low
+        // score with a domain-aware explanation instead of token guessing.
+        $candidateDomain = $this->getDomain($desired);
+        $jobDomain = $this->getDomain($jobText);
+
+        if ($candidateDomain !== null && $jobDomain !== null && $candidateDomain !== $jobDomain) {
+            $candidateLabel = config("professional_domains.domains.{$candidateDomain}.label", 'your field');
+            $jobLabel = config("professional_domains.domains.{$jobDomain}.label", 'this field');
+
+            return [
+                'score' => 10,
+                'label' => 'Role Alignment',
+                'reasons' => ["{$candidateLabel} and {$jobLabel} are different professional fields"],
+                'gaps' => ['The role is in a different professional domain than your desired role'],
+                'applicable' => true,
+            ];
         }
 
         $desiredTokens = $this->canonicalTokens($desired);
@@ -385,6 +528,7 @@ class JobMatchingService
             'label' => 'Role Alignment',
             'reasons' => $reasons,
             'gaps' => $score < 45 ? ["\"{$job->title}\" is quite different from your desired role"] : [],
+            'applicable' => true,
         ];
     }
 
@@ -393,7 +537,14 @@ class JobMatchingService
         $profile = $candidate->candidateProfile;
 
         if (! $profile) {
-            return $this->neutralResult('Experience');
+            return [
+                'score' => $this->neutral(),
+                'label' => 'Experience',
+                'reasons' => [],
+                'gaps' => [],
+                'details' => ['requirements_met' => [], 'requirements_missing' => []],
+                'applicable' => false,
+            ];
         }
 
         $years = (int) ($profile->years_of_experience ?? 0);
@@ -403,11 +554,12 @@ class JobMatchingService
 
         if ($required === 0 && $met === [] && $unmet === []) {
             return [
-                'score' => 100,
+                'score' => $this->neutral(),
                 'label' => 'Experience',
-                'reasons' => ["No minimum experience requirement - your {$years} ".Str::plural('year', $years).' fit comfortably'],
+                'reasons' => [],
                 'gaps' => [],
                 'details' => ['requirements_met' => [], 'requirements_missing' => []],
+                'applicable' => false,
             ];
         }
 
@@ -421,16 +573,13 @@ class JobMatchingService
                 $score = max(85, 100 - (($excess - $config['sweet_spot_years']) * $config['overqualified_decay']));
             }
 
-            if ($met !== []) {
-                $score = min(100, $score);
-            }
-
             return [
                 'score' => $score,
                 'label' => 'Experience',
                 'reasons' => ["Your {$years} ".Str::plural('year', $years)." of experience meets the {$required}-year requirement"],
                 'gaps' => [],
                 'details' => ['requirements_met' => $met, 'requirements_missing' => $unmet],
+                'applicable' => true,
             ];
         }
 
@@ -443,6 +592,7 @@ class JobMatchingService
             'reasons' => [$years.' of '.$required.' required '.Str::plural('year', $required).' of experience'],
             'gaps' => [$shortfall.' '.Str::plural('more year', $shortfall).' of experience typically expected for this role'],
             'details' => ['requirements_met' => $met, 'requirements_missing' => $unmet],
+            'applicable' => true,
         ];
     }
 
@@ -477,7 +627,28 @@ class JobMatchingService
         $profile = $candidate->personalityProfile;
 
         if (! $profile || ! $profile->assessment_completed) {
-            return $this->neutralResult('Work Style Compatibility', [], ['Complete the personality assessment for work-style compatibility insights.']);
+            return [
+                'score' => $this->neutral(),
+                'label' => 'Work Style Compatibility',
+                'reasons' => [],
+                'gaps' => ['Complete the personality assessment for work-style compatibility insights.'],
+                'applicable' => false,
+            ];
+        }
+
+        $hasEmployerCulture = EmployerCultureProfile::where('employer_id', $job->employer_id)->exists();
+        $hasJobPreferences = $job->temperament_preference !== null
+            || ! empty($job->personality_preferences_json)
+            || $hasEmployerCulture;
+
+        if (! $hasJobPreferences) {
+            return [
+                'score' => $this->neutral(),
+                'label' => 'Work Style Compatibility',
+                'reasons' => [],
+                'gaps' => [],
+                'applicable' => false,
+            ];
         }
 
         $signals = [];
@@ -501,7 +672,13 @@ class JobMatchingService
         }
 
         if ($signals === []) {
-            return $this->neutralResult('Work Style');
+            return [
+                'score' => $this->neutral(),
+                'label' => 'Work Style',
+                'reasons' => [],
+                'gaps' => [],
+                'applicable' => false,
+            ];
         }
 
         $totalWeight = array_sum(array_column($signals, 'weight'));
@@ -515,6 +692,7 @@ class JobMatchingService
             'label' => 'Work Style Compatibility',
             'reasons' => $reasons,
             'gaps' => $gaps,
+            'applicable' => true,
         ];
     }
 
@@ -770,7 +948,13 @@ class JobMatchingService
         $jobPref = strtolower(trim((string) ($job->work_preference ?? '')));
 
         if ($candidatePref === '' || $jobPref === '') {
-            return $this->neutralResult('Work Environment');
+            return [
+                'score' => $this->neutral(),
+                'label' => 'Work Environment',
+                'reasons' => [],
+                'gaps' => [],
+                'applicable' => false,
+            ];
         }
 
         $matrix = config('matching.work_preference_matrix');
@@ -803,6 +987,7 @@ class JobMatchingService
             'label' => 'Work Environment',
             'reasons' => $reasons,
             'gaps' => $gaps,
+            'applicable' => true,
         ];
     }
 
@@ -813,7 +998,13 @@ class JobMatchingService
         $max = $job->salary_max !== null ? (float) $job->salary_max : null;
 
         if (! $expected || ($min === null && $max === null)) {
-            return $this->neutralResult('Salary', [], $expected ? [] : ['Add your salary expectation to refine salary compatibility.']);
+            return [
+                'score' => $this->neutral(),
+                'label' => 'Salary',
+                'reasons' => [],
+                'gaps' => $expected ? [] : ['Add your salary expectation to refine salary compatibility.'],
+                'applicable' => false,
+            ];
         }
 
         $jobCurrency = strtoupper($job->salary_currency ?? 'NGN');
@@ -827,6 +1018,7 @@ class JobMatchingService
                 'label' => 'Salary',
                 'reasons' => ["Salary comparison unavailable - this role is listed in {$jobCurrency}"],
                 'gaps' => [],
+                'applicable' => false,
             ];
         }
 
@@ -839,6 +1031,7 @@ class JobMatchingService
                 'reasons' => ['Advertised salary range covers your expectation'],
                 'gaps' => [],
                 'details' => ['within_range' => true],
+                'applicable' => true,
             ];
         }
 
@@ -852,6 +1045,7 @@ class JobMatchingService
                 'reasons' => [],
                 'gaps' => ['Top of the advertised range is below your expectation'],
                 'details' => ['within_range' => false],
+                'applicable' => true,
             ];
         }
 
@@ -862,6 +1056,7 @@ class JobMatchingService
             'reasons' => ['Advertised salary exceeds your expectation'],
             'gaps' => [],
             'details' => ['within_range' => false],
+            'applicable' => true,
         ];
     }
 
@@ -874,10 +1069,11 @@ class JobMatchingService
 
         if ($requirements === []) {
             return [
-                'score' => 100,
+                'score' => $this->neutral(),
                 'label' => 'Education',
                 'reasons' => [],
                 'gaps' => [],
+                'applicable' => false,
             ];
         }
 
@@ -885,10 +1081,11 @@ class JobMatchingService
 
         if ($education->isEmpty()) {
             return [
-                'score' => $this->neutral(),
+                'score' => 20,
                 'label' => 'Education',
                 'reasons' => [],
                 'gaps' => ['Add your education history so qualification requirements can be evaluated'],
+                'applicable' => true,
             ];
         }
 
@@ -909,6 +1106,7 @@ class JobMatchingService
                         'label' => 'Education',
                         'reasons' => ["Your qualifications include the requested credential ({$requirement})"],
                         'gaps' => [],
+                        'applicable' => true,
                     ];
                 }
             }
@@ -921,6 +1119,7 @@ class JobMatchingService
                     'label' => 'Education',
                     'reasons' => ['Your highest qualification satisfies the educational level requested'],
                     'gaps' => [],
+                    'applicable' => true,
                 ];
             }
         }
@@ -930,17 +1129,12 @@ class JobMatchingService
             'label' => 'Education',
             'reasons' => [],
             'gaps' => ['Role requests: '.implode(', ', $requirements)],
+            'applicable' => true,
         ];
     }
 
     public function scoreAvailability(User $candidate, Job $job): array
     {
-        $availability = $candidate->candidateProfile?->availability;
-
-        if (! $availability) {
-            return $this->neutralResult('Availability', [], []);
-        }
-
         $order = [
             'immediately' => 1,
             '2_weeks' => 2,
@@ -958,8 +1152,21 @@ class JobMatchingService
             return [
                 'score' => $this->neutral(),
                 'label' => 'Availability',
-                'reasons' => ['No start-date requirement specified for this role'],
+                'reasons' => [],
                 'gaps' => [],
+                'applicable' => false,
+            ];
+        }
+
+        $availability = $candidate->candidateProfile?->availability;
+
+        if (! $availability) {
+            return [
+                'score' => 20,
+                'label' => 'Availability',
+                'reasons' => [],
+                'gaps' => ['Add your availability so start-date requirements can be evaluated'],
+                'applicable' => true,
             ];
         }
 
@@ -972,6 +1179,7 @@ class JobMatchingService
                     'label' => 'Availability',
                     'reasons' => ['You are available within the timeframe this employer needs'],
                     'gaps' => [],
+                    'applicable' => true,
                 ];
             }
         }
@@ -981,6 +1189,7 @@ class JobMatchingService
             'label' => 'Availability',
             'reasons' => [],
             'gaps' => ['Employer needs someone available sooner than your stated availability'],
+            'applicable' => true,
         ];
     }
 
@@ -1111,16 +1320,6 @@ class JobMatchingService
         return (int) config('matching.neutral_score', 75);
     }
 
-    private function neutralResult(string $label, array $reasons = [], array $gaps = []): array
-    {
-        return [
-            'score' => $this->neutral(),
-            'label' => $label,
-            'reasons' => $reasons,
-            'gaps' => $gaps,
-        ];
-    }
-
     private function levelFloor(?string $level): int
     {
         return match ($level) {
@@ -1212,7 +1411,7 @@ class JobMatchingService
         ];
 
         foreach ($components as $key => $component) {
-            if ($component['score'] >= 85 && isset($phrases[$key])) {
+            if (($component['applicable'] ?? true) && $component['score'] >= 85 && isset($phrases[$key])) {
                 $strengths[] = $phrases[$key];
             }
         }
@@ -1225,7 +1424,9 @@ class JobMatchingService
         $gaps = [];
 
         foreach ($components as $component) {
-            $gaps = array_merge($gaps, $component['gaps']);
+            if (($component['applicable'] ?? true)) {
+                $gaps = array_merge($gaps, $component['gaps']);
+            }
         }
 
         return array_values(array_unique($gaps));
@@ -1236,7 +1437,9 @@ class JobMatchingService
         $reasons = [];
 
         foreach ($components as $component) {
-            $reasons = array_merge($reasons, $component['reasons']);
+            if (($component['applicable'] ?? true)) {
+                $reasons = array_merge($reasons, $component['reasons']);
+            }
         }
 
         return array_values(array_slice(array_unique($reasons), 0, 6));

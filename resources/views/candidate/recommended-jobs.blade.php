@@ -76,13 +76,14 @@
                         $job = $item['job'];
                         $components = collect($item['breakdown']['components']);
                     @endphp
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow duration-200 relative flex flex-col">
-                        <div class="absolute top-3 right-3">
+                    <div class="relative bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow duration-200 flex flex-col group">
+                        <a href="{{ route('jobs.show', ['job' => $job]) }}" class="absolute inset-0 rounded-xl z-10" aria-label="View {{ $job->title }}"></a>
+                        <div class="absolute top-3 right-3 z-20">
                             <x-match-badge :score="$item['overall_score']" :category="$item['category']" />
                         </div>
 
-                        <div class="mb-4 pr-16">
-                            <h3 class="font-semibold text-gray-900 leading-snug">{{ $job->title }}</h3>
+                        <div class="relative mb-4 pr-16">
+                            <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-[#EB5233] transition-colors">{{ $job->title }}</h3>
                             <p class="text-sm text-gray-500 mt-1">
                                 {{ $job->company?->name ?? $job->employer->name ?? 'Confidential' }}
                             </p>
@@ -125,7 +126,7 @@
                             </ul>
                         @endif
 
-                        <details class="border-t border-slate-100 pt-3 mt-auto">
+                        <details class="relative border-t border-slate-100 pt-3 mt-auto z-20">
                             <summary class="text-sm font-medium text-[#052E5C] cursor-pointer select-none">
                                 Why this match?
                             </summary>
@@ -140,7 +141,7 @@
                         </details>
 
                         <a href="{{ route('jobs.show', ['job' => $job]) }}"
-                           class="mt-4 block w-full text-center text-sm bg-[#EB5233] hover:bg-[#d94527] text-white py-2 rounded-lg transition-colors font-medium">
+                           class="relative z-20 mt-4 block w-full text-center text-sm bg-[#EB5233] hover:bg-[#d94527] text-white py-2 rounded-lg transition-colors font-medium">
                             View Job
                         </a>
                     </div>
