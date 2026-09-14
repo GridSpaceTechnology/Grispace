@@ -23,6 +23,11 @@ class DataPrivacyService
             'assessment' => $user->candidateAssessment?->toArray(),
             'applications' => $user->jobApplications->toArray(),
             'consents' => $user->consents->toArray(),
+            'behavioral' => [
+                'search_history' => $user->searchHistories()->get()->toArray(),
+                'job_interactions' => $user->jobInteractions()->get()->toArray(),
+                'behavioral_profile' => $user->behavioralProfile?->toArray(),
+            ],
             'exported_at' => now()->toIso8601String(),
         ];
     }
@@ -46,6 +51,9 @@ class DataPrivacyService
             $user->candidatePreferences()?->delete();
             $user->candidateAssessment()?->delete();
             $user->candidateMedia()?->delete();
+            $user->searchHistories()->delete();
+            $user->jobInteractions()->delete();
+            $user->behavioralProfile()?->delete();
 
             AuditLog::log(
                 $user->id,

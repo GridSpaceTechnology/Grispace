@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Job;
 use App\Models\JobApplication;
 use App\Models\User;
+use App\Services\CandidateBehavioralProfileService;
 use App\Services\MatchingEngine;
 use App\Services\MatchingEngineService;
 use App\Services\ProfileCompletionService;
@@ -17,10 +18,16 @@ class CandidateDashboardController extends Controller
 
     protected MatchingEngineService $matchingEngineService;
 
-    public function __construct(MatchingEngine $matchingEngine, MatchingEngineService $matchingEngineService)
-    {
+    protected CandidateBehavioralProfileService $behavior;
+
+    public function __construct(
+        MatchingEngine $matchingEngine,
+        MatchingEngineService $matchingEngineService,
+        CandidateBehavioralProfileService $behavior,
+    ) {
         $this->matchingEngine = $matchingEngine;
         $this->matchingEngineService = $matchingEngineService;
+        $this->behavior = $behavior;
     }
 
     public function index(Request $request)
@@ -90,6 +97,8 @@ class CandidateDashboardController extends Controller
         if (auth()->user()->personalityProfile?->assessment_completed) {
             $this->matchingEngineService->saveMatch($user, $job);
         }
+
+        $this->behavior->recordApply($user, $job);
 
         return back()->with('success', 'Application submitted successfully!');
     }

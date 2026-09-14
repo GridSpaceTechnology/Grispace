@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\CandidateCardResource;
 use App\Http\Resources\JobResource;
 use App\Models\Job;
+use App\Services\CandidateBehavioralProfileService;
 use App\Services\JobSearchService;
 use App\Services\MatchService;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +17,7 @@ class MarketplaceController extends Controller
     public function __construct(
         private JobSearchService $searchService,
         private MatchService $matchService,
+        private CandidateBehavioralProfileService $behavior,
     ) {}
 
     public function searchJobs(Request $request): AnonymousResourceCollection
@@ -37,6 +39,10 @@ class MarketplaceController extends Controller
         ]);
 
         $query = $this->searchService->search($filters);
+
+        if (auth()->check() && auth()->user()->isCandidate() && ! empty($filters['keyword'])) {
+            $this->behavior->recordSearch(auth()->user(), $filters['keyword'], $filters);
+        }
 
         $sortBy = $filters['sort_by'] ?? 'newest';
         match ($sortBy) {
@@ -71,6 +77,8 @@ class MarketplaceController extends Controller
         $response = (new JobResource($job))->toArray(request());
 
         if (auth()->check() && auth()->user()->isCandidate()) {
+            $this->behavior->recordView(auth()->user(), $job);
+
             $response['match_score'] = $this->matchService->calculateMatchScore(auth()->user(), $job);
             $response['has_applied'] = auth()->user()
                 ->jobApplications()
@@ -161,6 +169,8 @@ class MarketplaceController extends Controller
             'status' => 'applied',
             'match_score_snapshot' => $matchScore,
         ]);
+
+        $this->behavior->recordApply($candidate, $job);
 
         return response()->json([
             'message' => 'Application submitted successfully',

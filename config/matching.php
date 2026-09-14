@@ -90,6 +90,80 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Candidate Behavioral Intelligence
+    |--------------------------------------------------------------------------
+    |
+    | Candidate-side ranking enrichment. Searches, job views and applications
+    | accumulate into a private per-candidate behavioral profile which gently
+    | re-ranks professionally compatible jobs. Behavior is a ranking modifier
+    | only: it can never override the professional domain gate, and it is
+    | never exposed to employers.
+    |
+    */
+
+    'behavioral' => [
+
+        // Master toggle for behavioral recording and ranking enrichment.
+        'enabled' => true,
+
+        // Signal strength contributed by each interaction type. Applications
+        // express the strongest intent, then saves, then searches (which are
+        // broader), then mere views.
+        'event_weights' => [
+            'search' => 10,
+            'view' => 8,
+            'save' => 12,
+            'apply' => 20,
+        ],
+
+        // Interest signals decay toward zero with this half-life in days.
+        'half_life_days' => 30,
+
+        // A repeated view of the same job within this window counts once.
+        'view_dedup_minutes' => 30,
+
+        // Aggregated interest per signal is clamped to this ceiling.
+        'interest_cap' => 100,
+
+        // Contribution of each dimension to a job's behavioral relevance
+        // score. Intended to sum to 1.0.
+        'relevance_weights' => [
+            'domain' => 0.35,
+            'role' => 0.30,
+            'skills' => 0.20,
+            'job_specific' => 0.15,
+        ],
+
+        // Boost (points) added to an already-professionally-compatible
+        // match, scaled by behavioral relevance up to this cap.
+        'boost' => [
+            'max_points' => 12,
+        ],
+
+        // Minimum recorded events before behavior influences ranking, so
+        // single stray searches cannot tilt results.
+        'min_activity_events' => 3,
+
+        // Deterministic vocabulary used by the search intent parser.
+        'work_arrangements' => ['remote', 'hybrid', 'onsite', 'flexible'],
+        'seniority_keywords' => [
+            'senior' => 'Senior',
+            'junior' => 'Junior',
+            'lead' => 'Lead',
+            'principal' => 'Principal',
+            'mid-level' => 'Mid',
+            'entry-level' => 'Entry Level',
+            'entry' => 'Entry Level',
+            'intern' => 'Intern',
+        ],
+        'locations' => [
+            'lagos', 'abuja', 'port harcourt', 'ibadan', 'kaduna', 'kano',
+            'enugu', 'owerri', 'benin city', 'yoruba', 'nigeria',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Skills Matching
     |--------------------------------------------------------------------------
     */

@@ -21,9 +21,17 @@ use Illuminate\Support\Str;
  * missing data on either side are excluded from the weighted calculation
  * (not rewarded with high neutral scores). Every component returns
  * human-readable reasons and gaps plus an "applicable" flag.
+ *
+ * Candidate-side behavioral intelligence (config/matching.php behavioral
+ * block) layers a bounded ranking modifier on top of the pure profile score in
+ * recommendJobsForCandidate. It can nudge an already-compatible match but can
+ * never override the professional domain gate, and it is never consumed by
+ * the employer-facing candidate ranking path.
  */
 class JobMatchingService
 {
+    public function __construct(protected CandidateBehavioralProfileService $behavior) {}
+
     public function overall(User $candidate, Job $job): int
     {
         return $this->calculateBreakdown($candidate, $job)['overall_score'];
@@ -190,7 +198,12 @@ class JobMatchingService
     /**
      * Rank open jobs for a candidate with optional filters, paginated.
      *
-     * @return Collection<int, array{job: Job, overall_score: int, category: string, matched_skills: array, missing_skills: array, top_reasons: array}>
+     * Behavioral intelligence modulates the ranking of professionally
+     * compatible jobs via a bounded boost (never overriding the domain gate).
+     * overall_score stays profile-only; final_score is the combined ranking
+     * value displayed to the candidate.
+     *
+     * @return Collection<int, array{job: Job, overall_score: int, final_score: int, behavioral_relevance: int, behavioral_reasons: array, category: string, matched_skills: array, missing_skills: array, top_reasons: array}>
      */
     public function recommendJobsForCandidate(User $candidate, array $filters = [], int $perPage = 12): LengthAwarePaginator
     {
@@ -203,13 +216,26 @@ class JobMatchingService
 
         $jobs = $query->get();
 
+        $behaviorProfile = $this->behavior->isActive($candidate)
+            ? $candidate->behavioralProfile
+            : null;
+
         $ranked = $jobs
-            ->map(function (Job $job) use ($candidate) {
+            ->map(function (Job $job) use ($candidate, $behaviorProfile) {
                 $breakdown = $this->calculateBreakdown($candidate, $job);
+
+                [$relevance, $boost, $behaviorReasons] = $this->behavior->forRecommendation(
+                    $behaviorProfile,
+                    $job,
+                    $breakdown
+                );
 
                 return [
                     'job' => $job,
                     'overall_score' => $breakdown['overall_score'],
+                    'final_score' => min(100, $breakdown['overall_score'] + $boost),
+                    'behavioral_relevance' => $relevance,
+                    'behavioral_reasons' => $behaviorReasons,
                     'category' => $breakdown['category'],
                     'matched_skills' => array_slice($breakdown['matched_skills'], 0, 5),
                     'missing_skills' => array_slice($breakdown['missing_skills'], 0, 3),
@@ -218,7 +244,7 @@ class JobMatchingService
                 ];
             })
             ->filter(fn (array $item) => ($filters['min_score'] ?? 0) <= $item['overall_score'])
-            ->sortByDesc('overall_score')
+            ->sortBy(fn (array $item) => [$item['final_score'], $item['overall_score']], SORT_REGULAR, true)
             ->values();
 
         return $this->paginateCollection($ranked, $perPage);

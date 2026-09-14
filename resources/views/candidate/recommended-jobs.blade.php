@@ -126,6 +126,22 @@
                             </ul>
                         @endif
 
+                        @if(!empty($item['behavioral_reasons']))
+                            <div class="rounded-lg bg-[#052E5C]/5 border border-[#052E5C]/10 px-3 py-2 mb-3">
+                                <p class="text-[10px] uppercase tracking-wide text-[#052E5C]/60 font-semibold mb-1">Based on your recent activity</p>
+                                <ul class="space-y-1">
+                                    @foreach($item['behavioral_reasons'] as $reason)
+                                        <li class="text-xs text-[#052E5C] flex items-start gap-1.5">
+                                            <svg class="w-3.5 h-3.5 text-[#052E5C] shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                            </svg>
+                                            {{ $reason }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <details class="relative border-t border-slate-100 pt-3 mt-auto z-20">
                             <summary class="text-sm font-medium text-[#052E5C] cursor-pointer select-none">
                                 Why this match?

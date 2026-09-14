@@ -3,10 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Job;
+use App\Services\CandidateBehavioralProfileService;
 use Illuminate\Http\Request;
 
 class PublicJobController extends Controller
 {
+    public function __construct(
+        protected CandidateBehavioralProfileService $behavior,
+    ) {}
+
     public function index(Request $request)
     {
         $query = Job::where('status', 'open')
@@ -19,6 +24,12 @@ class PublicJobController extends Controller
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%");
             });
+
+            if (($user = auth()->user())?->isCandidate()) {
+                $this->behavior->recordSearch($user, $search, [
+                    'location' => $request->string('location')->toString(),
+                ]);
+            }
         }
 
         if ($request->has('location') && $request->location) {
@@ -39,9 +50,13 @@ class PublicJobController extends Controller
         $viewer = auth()->user();
         $canMessage = false;
 
-        if ($viewer && $viewer->isCandidate() && ! $viewer->isSuspendedForUnverifiedEmail()) {
-            $company = $job->company ?? $job->employer?->company;
-            $canMessage = $company === null || $company->allow_candidate_messages !== false;
+        if ($viewer && $viewer->isCandidate()) {
+            $this->behavior->recordView($viewer, $job);
+
+            if (! $viewer->isSuspendedForUnverifiedEmail()) {
+                $company = $job->company ?? $job->employer?->company;
+                $canMessage = $company === null || $company->allow_candidate_messages !== false;
+            }
         }
 
         return view('jobs.show', [
