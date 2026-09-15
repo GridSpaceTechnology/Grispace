@@ -30,7 +30,10 @@ use Illuminate\Support\Str;
  */
 class JobMatchingService
 {
-    public function __construct(protected CandidateBehavioralProfileService $behavior) {}
+    public function __construct(
+        protected CandidateBehavioralProfileService $behavior,
+        protected CandidateFeedbackSignalService $feedbackSignals,
+    ) {}
 
     public function overall(User $candidate, Job $job): int
     {
@@ -45,6 +48,9 @@ class JobMatchingService
     /**
      * @return array{
      *     overall_score: int,
+     *     profile_match_score: int,
+     *     recommendation_score: int,
+     *     match_status: string,
      *     category: string,
      *     domain_compatible: bool,
      *     candidate_domain: ?string,
@@ -54,6 +60,8 @@ class JobMatchingService
      *     missing_skills: array,
      *     strengths: array,
      *     gaps: array,
+     *     hard_gaps: array,
+     *     soft_gaps: array,
      *     reasons: array
      * }
      */
@@ -88,7 +96,9 @@ class JobMatchingService
         $jobDomain = $this->getDomain(trim(($job->title ?? '').' '.($job->role ?? '')));
         $domainCompatible = $this->isDomainCompatible($candidateDomain, $jobDomain);
 
-        if ($candidateDomain !== null && $jobDomain !== null && ! $domainCompatible) {
+        $gateApplied = $candidateDomain !== null && $jobDomain !== null && ! $domainCompatible;
+
+        if ($gateApplied) {
             $overall = min($overall, (int) config('matching.domain_gate_cap', 15));
         }
 
@@ -96,6 +106,9 @@ class JobMatchingService
 
         return [
             'overall_score' => $overall,
+            'profile_match_score' => $overall,
+            'recommendation_score' => $overall,
+            'match_status' => $this->matchStatusFor($overall, $gateApplied),
             'category' => $this->categoryFor($overall),
             'domain_compatible' => $domainCompatible,
             'candidate_domain' => $candidateDomain
@@ -109,6 +122,8 @@ class JobMatchingService
             'missing_skills' => $this->skillNames($components['skills']['details']['missing'] ?? []),
             'strengths' => $this->collectStrengths($components),
             'gaps' => $this->collectGaps($components),
+            'hard_gaps' => $this->collectHardGaps($components),
+            'soft_gaps' => $this->collectSoftGaps($components),
             'reasons' => $this->collectReasons($components),
         ];
     }
@@ -190,6 +205,30 @@ class JobMatchingService
         };
     }
 
+    /**
+     * Engine-level match status. The professional domain gate has priority:
+     * whenever it capped the score the status must be 'incompatible', even if
+     * the numeric score would otherwise look middling.
+     */
+    public function matchStatusFor(int $profileScore, bool $gateApplied = false): string
+    {
+        if ($gateApplied) {
+            return 'incompatible';
+        }
+
+        $statuses = config('matching.statuses');
+
+        foreach (['excellent', 'strong', 'moderate', 'weak'] as $status) {
+            $min = (int) ($statuses[$status]['min'] ?? 0);
+
+            if ($profileScore >= $min) {
+                return $status;
+            }
+        }
+
+        return 'weak';
+    }
+
     public function weight(string $component): int
     {
         return (int) config("matching.weights.{$component}", 0);
@@ -200,10 +239,15 @@ class JobMatchingService
      *
      * Behavioral intelligence modulates the ranking of professionally
      * compatible jobs via a bounded boost (never overriding the domain gate).
-     * overall_score stays profile-only; final_score is the combined ranking
-     * value displayed to the candidate.
+     * overall_score / profile_match_score stay profile-only; recommendation_score
+     * and final_score are the combined ranking values displayed to the
+     * candidate. Deterministic hard-prune filters are applied before scoring so
+     * implausible jobs are never fully scored, and identical listings are
+     * collapsed while per-company diversity is preserved.
      *
-     * @return Collection<int, array{job: Job, overall_score: int, final_score: int, behavioral_relevance: int, behavioral_reasons: array, category: string, matched_skills: array, missing_skills: array, top_reasons: array}>
+     * Additional filters: min_score, exclude_applied.
+     *
+     * @return Collection<int, array{job: Job, overall_score: int, profile_match_score: int, recommendation_score: int, final_score: int, match_status: string, behavioral_relevance: int, behavioral_reasons: array, category: string, matched_skills: array, missing_skills: array, top_reasons: array, hard_gaps: array, soft_gaps: array}>
      */
     public function recommendJobsForCandidate(User $candidate, array $filters = [], int $perPage = 12): LengthAwarePaginator
     {
@@ -216,11 +260,20 @@ class JobMatchingService
 
         $jobs = $query->get();
 
+        $prune = config('matching.recommendation.hard_prune', []);
+        $appliedJobIds = [];
+
+        if (! empty($filters['exclude_applied'])) {
+            $appliedJobIds = $candidate->jobApplications()->pluck('job_id')->all();
+        }
+
         $behaviorProfile = $this->behavior->isActive($candidate)
             ? $candidate->behavioralProfile
             : null;
 
         $ranked = $jobs
+            ->reject(fn (Job $job) => ! $this->passesJobPrune($candidate, $job, $prune))
+            ->reject(fn (Job $job) => in_array($job->id, $appliedJobIds, true))
             ->map(function (Job $job) use ($candidate, $behaviorProfile) {
                 $breakdown = $this->calculateBreakdown($candidate, $job);
 
@@ -230,21 +283,32 @@ class JobMatchingService
                     $breakdown
                 );
 
+                $recommendationScore = min(100, $breakdown['profile_match_score'] + $boost);
+
+                $recommendationScore = $this->applyNegativeSignals($candidate, $job, $recommendationScore);
+
                 return [
                     'job' => $job,
                     'overall_score' => $breakdown['overall_score'],
-                    'final_score' => min(100, $breakdown['overall_score'] + $boost),
+                    'profile_match_score' => $breakdown['profile_match_score'],
+                    'recommendation_score' => $recommendationScore,
+                    'final_score' => $recommendationScore,
+                    'match_status' => $breakdown['match_status'],
                     'behavioral_relevance' => $relevance,
                     'behavioral_reasons' => $behaviorReasons,
                     'category' => $breakdown['category'],
                     'matched_skills' => array_slice($breakdown['matched_skills'], 0, 5),
                     'missing_skills' => array_slice($breakdown['missing_skills'], 0, 3),
                     'top_reasons' => array_slice($breakdown['reasons'], 0, 3),
+                    'hard_gaps' => $breakdown['hard_gaps'],
+                    'soft_gaps' => $breakdown['soft_gaps'],
                     'breakdown' => $breakdown,
                 ];
             })
             ->filter(fn (array $item) => ($filters['min_score'] ?? 0) <= $item['overall_score'])
             ->sortBy(fn (array $item) => [$item['final_score'], $item['overall_score']], SORT_REGULAR, true)
+            ->when(config('matching.recommendation.dedupe_identical_jobs', true), fn ($collection) => $this->dedupeIdenticalJobs($collection))
+            ->pipe(fn ($collection) => $this->diversify($collection))
             ->values();
 
         return $this->paginateCollection($ranked, $perPage);
@@ -252,6 +316,12 @@ class JobMatchingService
 
     /**
      * Rank candidates for a job with optional filters, paginated.
+     *
+     * Employer-facing: behavior never influences this ranking and no behavioral
+     * data is exposed. Deterministic hard-prune filters run before scoring, and
+     * applied candidates can be excluded with the exclude_applied filter.
+     *
+     * @return Collection<int, array{candidate: User, overall_score: int, profile_match_score: int, recommendation_score: int, match_status: string, category: string, matched_skills: array, missing_skills: array, strengths: array}>
      */
     public function rankCandidatesForJob(Job $job, array $filters = [], int $perPage = 12): LengthAwarePaginator
     {
@@ -267,7 +337,17 @@ class JobMatchingService
 
         $query = $this->applyCandidateFilters($query, $filters);
 
-        $candidates = $query->get();
+        $prune = config('matching.recommendation.hard_prune', []);
+        $appliedCandidateIds = [];
+
+        if (! empty($filters['exclude_applied'])) {
+            $appliedCandidateIds = $job->applications()->pluck('candidate_id')->all();
+        }
+
+        $candidates = $query->get()
+            ->reject(fn (User $candidate) => in_array($candidate->id, $appliedCandidateIds, true))
+            ->filter(fn (User $candidate) => $this->passesCandidatePrune($candidate, $job, $prune))
+            ->values();
 
         $ranked = $candidates
             ->map(function (User $candidate) use ($job) {
@@ -276,6 +356,9 @@ class JobMatchingService
                 return [
                     'candidate' => $candidate,
                     'overall_score' => $breakdown['overall_score'],
+                    'profile_match_score' => $breakdown['profile_match_score'],
+                    'recommendation_score' => $breakdown['recommendation_score'],
+                    'match_status' => $breakdown['match_status'],
                     'category' => $breakdown['category'],
                     'matched_skills' => array_slice($breakdown['matched_skills'], 0, 5),
                     'missing_skills' => array_slice($breakdown['missing_skills'], 0, 4),
@@ -288,6 +371,24 @@ class JobMatchingService
             ->values();
 
         return $this->paginateCollection($ranked, $perPage);
+    }
+
+    /**
+     * Candidate feedback negative signals (bounded, decaying) modulate the
+     * recommendation ranking score only. Never touches profile_match_score,
+     * match_status or the domain gate.
+     */
+    protected function applyNegativeSignals(User $candidate, Job $job, int $recommendationScore): int
+    {
+        if (! (bool) config('matching.recommendation.negative_signal.enabled', true)) {
+            return $recommendationScore;
+        }
+
+        if ($this->feedbackSignals->totalPenalty($candidate, $job) <= 0) {
+            return $recommendationScore;
+        }
+
+        return max(0, $recommendationScore - $this->feedbackSignals->totalPenalty($candidate, $job));
     }
 
     // ------------------------------------------------------------------
@@ -1338,8 +1439,188 @@ class JobMatchingService
     }
 
     // ------------------------------------------------------------------
-    // Small helpers
+    // Hard pruning, deduplication and diversity
     // ------------------------------------------------------------------
+
+    /**
+     * Cheap, deterministic hard filters evaluated BEFORE scoring. A false
+     * result drops the job outright; soft penalties belong in the scorers.
+     */
+    private function passesJobPrune(User $candidate, Job $job, array $prune): bool
+    {
+        $profile = $candidate->candidateProfile;
+
+        if (! empty($prune['experience']) && $job->minimum_experience !== null) {
+            $years = (int) ($profile?->years_of_experience ?? 0);
+
+            if ($years < (int) $job->minimum_experience) {
+                return false;
+            }
+        }
+
+        if (! empty($prune['work_preference'])) {
+            $candidatePref = strtolower((string) ($profile?->work_preference ?? ''));
+            $jobPref = strtolower((string) ($job->work_preference ?? ''));
+
+            if ($candidatePref !== '' && $jobPref !== '') {
+                $score = config("matching.work_preference_matrix.{$candidatePref}.{$jobPref}", 50);
+
+                if ($score <= 30) {
+                    return false;
+                }
+            }
+        }
+
+        if (! empty($prune['location_country']) && in_array(strtolower((string) ($job->work_preference ?? '')), ['onsite', 'hybrid'], true)) {
+            $candidateCountry = strtolower((string) ($profile?->location_country ?? ''));
+            $jobCountry = strtolower((string) ($job->location_country ?? ''));
+
+            if ($candidateCountry !== '' && $jobCountry !== '' && $candidateCountry !== $jobCountry) {
+                return false;
+            }
+        }
+
+        if (! empty($prune['required_skill_overlap'])) {
+            $required = $this->normalizedSkillNames($job->getRequiredSkills());
+
+            if ($required !== []) {
+                $owned = $candidate->candidateSkills()->get()
+                    ->map(function ($skill) {
+                        return $this->normalizeSkill((string) ($skill->skill_name ?: $skill->skill?->name));
+                    })
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                if ($owned !== [] && array_intersect($owned, $required) === []) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Candidate-side version of the hard prune used by employer-facing
+     * ranking. Mirrors passesJobPrune exactly so both directions agree.
+     */
+    private function passesCandidatePrune(User $candidate, Job $job, array $prune): bool
+    {
+        $profile = $candidate->candidateProfile;
+
+        if (! $profile) {
+            return false;
+        }
+
+        if (! empty($prune['experience']) && $job->minimum_experience !== null) {
+            $years = (int) ($profile->years_of_experience ?? 0);
+
+            if ($years < (int) $job->minimum_experience) {
+                return false;
+            }
+        }
+
+        if (! empty($prune['work_preference'])) {
+            $candidatePref = strtolower((string) ($profile->work_preference ?? ''));
+            $jobPref = strtolower((string) ($job->work_preference ?? ''));
+
+            if ($candidatePref !== '' && $jobPref !== '') {
+                $score = config("matching.work_preference_matrix.{$candidatePref}.{$jobPref}", 50);
+
+                if ($score <= 30) {
+                    return false;
+                }
+            }
+        }
+
+        if (! empty($prune['location_country']) && in_array(strtolower((string) ($job->work_preference ?? '')), ['onsite', 'hybrid'], true)) {
+            $candidateCountry = strtolower((string) ($profile->location_country ?? ''));
+            $jobCountry = strtolower((string) ($job->location_country ?? ''));
+
+            if ($candidateCountry !== '' && $jobCountry !== '' && $candidateCountry !== $jobCountry) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function dedupeIdenticalJobs(Collection $items): Collection
+    {
+        $seen = [];
+
+        return $items
+            ->filter(function (array $item) use (&$seen) {
+                $job = $item['job'];
+                $companyId = $job->company_id ?? $job->employer_id;
+
+                if ($companyId === null) {
+                    return true;
+                }
+
+                $key = (string) $companyId.'|'.$this->normalizeTitleKey($job->title);
+
+                if (isset($seen[$key])) {
+                    return false;
+                }
+
+                $seen[$key] = true;
+
+                return true;
+            })
+            ->values();
+    }
+
+    private function diversify(Collection $items): Collection
+    {
+        $cap = (int) config('matching.recommendation.diversity_max_per_company', 3);
+
+        if ($cap <= 0) {
+            return $items->values();
+        }
+
+        $counts = [];
+        $head = collect();
+        $tail = collect();
+
+        foreach ($items as $item) {
+            $companyId = $item['job']->company_id ?? $item['job']->employer_id;
+
+            if ($companyId === null) {
+                $head->push($item);
+
+                continue;
+            }
+
+            $current = $counts[$companyId] ?? 0;
+
+            if ($current < $cap) {
+                $head->push($item);
+                $counts[$companyId] = $current + 1;
+            } else {
+                $tail->push($item);
+            }
+        }
+
+        return $head->concat($tail)->values();
+    }
+
+    private function normalizeTitleKey(?string $title): string
+    {
+        return mb_strtolower((string) preg_replace('/\s+/', ' ', trim((string) $title)));
+    }
+
+    private function normalizedSkillNames(array $names): array
+    {
+        return collect($names)
+            ->map(fn ($name) => $this->normalizeSkill((string) $name))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
 
     private function neutral(): int
     {
@@ -1453,6 +1734,43 @@ class JobMatchingService
             if (($component['applicable'] ?? true)) {
                 $gaps = array_merge($gaps, $component['gaps']);
             }
+        }
+
+        return array_values(array_unique($gaps));
+    }
+
+    /**
+     * Deal-breaker gaps (missing required skills, unmet experience or
+     * qualification requirements, incompatible arrangements or timing).
+     */
+    private function collectHardGaps(array $components): array
+    {
+        return $this->collectGapsFrom($components, config('matching.hard_gap_components', []));
+    }
+
+    /**
+     * Negotiable gaps (salary stretch, culture fit, over-qualification).
+     */
+    private function collectSoftGaps(array $components): array
+    {
+        $hard = config('matching.hard_gap_components', []);
+        $soft = array_diff(array_keys($components), array_values($hard));
+
+        return $this->collectGapsFrom($components, array_values($soft));
+    }
+
+    private function collectGapsFrom(array $components, array $keys): array
+    {
+        $gaps = [];
+
+        foreach ($keys as $key) {
+            $component = $components[$key] ?? null;
+
+            if (! $component || ! ($component['applicable'] ?? true)) {
+                continue;
+            }
+
+            $gaps = array_merge($gaps, $component['gaps'] ?? []);
         }
 
         return array_values(array_unique($gaps));

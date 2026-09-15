@@ -78,6 +78,250 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Algorithm Version
+    |--------------------------------------------------------------------------
+    |
+    | Bump whenever the scoring semantics change. Persisted match scores carry
+    | this version so stale rows (computed by an older algorithm) can be
+    | detected and recomputed instead of being trusted by dashboards.
+    |
+    */
+
+    'algorithm_version' => 3,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Match Status Labels
+    |--------------------------------------------------------------------------
+    |
+    | Engine-level status derived from the professional profile score. The
+    | domain gate has priority: whenever it capped a score the status must be
+    | 'incompatible' even if the numeric score looks middling. These keys are
+    | returned by JobMatchingService::matchStatusFor() and are distinct from
+    | the friendlier category labels used by the UI.
+    |
+    */
+
+    'statuses' => [
+        'excellent' => ['label' => 'Excellent Match', 'min' => 90],
+        'strong' => ['label' => 'Strong Match', 'min' => 80],
+        'moderate' => ['label' => 'Moderate Match', 'min' => 60],
+        'weak' => ['label' => 'Weak Match', 'min' => 0],
+        'incompatible' => ['label' => 'Incompatible Match', 'min' => 0],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Hard vs Soft Gaps
+    |--------------------------------------------------------------------------
+    |
+    | Gaps surfaced by these components (e.g. a missing required skill, an
+    | unmet experience requirement) are treated as deal-breakers. Gaps from
+    | other components (salary stretch, culture differences, an over-qualified
+    | profile) are noted as soft because they are negotiable or contextual.
+    |
+    */
+
+    'hard_gap_components' => [
+        'skills',
+        'role',
+        'experience',
+        'education',
+        'work_preference',
+        'availability',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recommendation Layer
+    |--------------------------------------------------------------------------
+    |
+    | The candidate-facing ranking pipeline built on top of the professional
+    | profile score. Hard-prune filters are applied BEFORE expensive scoring
+    | so only plausible jobs are fully scored; the domain gate still governs
+    | compatibility and is never bypassed by pruning. Deduplication collapses
+    | identical listings posted by the same company and diversity stops one
+    | company from sweeping the top results.
+    |
+    */
+
+    'recommendation' => [
+        // Collapse jobs that are identical (same company + title) and keep the
+        // best-scoring listing of each duplicate group.
+        'dedupe_identical_jobs' => true,
+
+        // Maximum number of listings from a single company allowed in the top
+        // results before the remainder is pushed lower, promoting variety.
+        'diversity_max_per_company' => 3,
+
+        // Cheap deterministic filters applied before scoring. Each one can be
+        // toggled independently. They are hard kills, not soft penalties.
+        'hard_prune' => [
+            // Drop jobs that demand more experience than the candidate holds.
+            'experience' => true,
+            // Drop jobs whose working arrangement is a hard mismatch for the
+            // candidate's preference (matrix score <= 30).
+            'work_preference' => true,
+            // Drop on-site/hybrid jobs based abroad when the candidate is
+            // elsewhere.
+            'location_country' => true,
+            // Drop jobs with required skills the candidate has none of.
+            // Off by default: strong professionals can still be worth surfacing
+            // even with zero literal skill overlap.
+            'required_skill_overlap' => false,
+        ],
+
+        // Bounded, decaying negative signals derived from candidate feedback
+        // (e.g. "not relevant", "not interested", "wrong role"). The penalty
+        // applies to the recommendation ranking score only - never to the
+        // professional profile match, never to the domain gate, and never to
+        // employer-facing candidate rankings.
+        'negative_signal' => [
+            // Master toggle for negative-signal ranking adjustments.
+            'enabled' => true,
+
+            // Points subtracted from recommendation_score per negative
+            // assessment before time decay.
+            'penalty_points' => 12,
+
+            // Domain spill-over: a dismissed job reduces other jobs in the
+            // same professional domain by this fraction of the base penalty.
+            'domain_decay' => 0.5,
+
+            // Total penalty applied to a single job is clamped to this cap so
+            // a handful of dismissals can never zero out an otherwise strong
+            // match.
+            'penalty_cap' => 30,
+
+            // Negative signals decay toward zero with this half-life in days.
+            'half_life_days' => 14,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Match Quality Metrics
+    |--------------------------------------------------------------------------
+    |
+    | Internal matching analytics guardrails. Reports only surface when enough
+    | outcome events exist to be meaningful, and ranking-quality metrics are
+    | computed over the top-K candidate/job lists.
+    |
+    */
+
+    'metrics' => [
+        // Minimum recorded outcome events before band reports are shown.
+        'min_sample' => 20,
+
+        // Standard list depth used by precision@K / recall@K.
+        'top_k' => 10,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Experiment Infrastructure
+    |--------------------------------------------------------------------------
+    |
+    | Infrastructure for future algorithm-variant experiments. Every outcome
+    | event and match snapshot carries the algorithm_version that produced it,
+    | so version A/B comparisons are possible without any live routing. These
+    | flags stay off: experiments never change hard safety/compatibility rules.
+    |
+    */
+
+    'experiments' => [
+        // Whether version comparison reports are rendered in the admin UI.
+        'reporting' => true,
+
+        // Live routing of users to variants. Always false - recording only.
+        'live_routing' => false,
+
+        // Human-readable labels per algorithm version for analytics reports.
+        'versions' => [
+            3 => 'v3 (current)',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Match Outcome Events
+    |--------------------------------------------------------------------------
+    |
+    | The outcome event vocabulary recorded for match-quality measurement.
+    | Each key maps to the category used by the internal analytics and the
+    | minimum signal weight. Events are append-only; a unique occurrence key
+    | makes re-recording idempotent.
+    |
+    */
+
+    'outcome_events' => [
+        'job_recommended' => ['category' => 'exposure', 'weight' => 1],
+        'job_viewed' => ['category' => 'exposure', 'weight' => 8],
+        'candidate_profile_viewed' => ['category' => 'exposure', 'weight' => 8],
+        'job_applied' => ['category' => 'application', 'weight' => 20],
+        'application_withdrawn' => ['category' => 'application', 'weight' => 4],
+        'application_rejected' => ['category' => 'application', 'weight' => 4],
+        'application_advanced' => ['category' => 'application', 'weight' => 10],
+        'candidate_shortlisted' => ['category' => 'application', 'weight' => 10],
+        'hire_recorded' => ['category' => 'application', 'weight' => 40],
+        'employer_contacted_candidate' => ['category' => 'contact', 'weight' => 6],
+        'candidate_contacted_employer' => ['category' => 'contact', 'weight' => 6],
+        'interview_scheduled' => ['category' => 'interview', 'weight' => 12],
+        'interview_completed' => ['category' => 'interview', 'weight' => 18],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recommendation Feedback
+    |--------------------------------------------------------------------------
+    |
+    | Explicit candidate and employer feedback types collected for calibration
+    | and quality measurement. Feedback never mutates match scores directly
+    | (except the bounded, decaying negative signal above); it drives the
+    | internal analytics and human-controlled calibration.
+    |
+    */
+
+    'feedback' => [
+        'candidate' => [
+            'relevant' => ['negative' => false],
+            'not_relevant' => ['negative' => true],
+            'not_interested' => ['negative' => true],
+            'already_applied' => ['negative' => false],
+            'wrong_role' => ['negative' => true],
+            'wrong_location' => ['negative' => true],
+            'wrong_experience' => ['negative' => true],
+        ],
+        'employer' => [
+            'relevant_candidate' => ['negative' => false],
+            'not_relevant' => ['negative' => false],
+            'skills_mismatch' => ['negative' => false],
+            'experience_mismatch' => ['negative' => false],
+            'role_mismatch' => ['negative' => false],
+            'already_contacted' => ['negative' => false],
+            'not_interested' => ['negative' => false],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Match Persistence & Staleness
+    |--------------------------------------------------------------------------
+    |
+    | Persisted job_match_scores rows are treated as stale when their stored
+    | algorithm version no longer matches, their data checksum differs from the
+    | current candidate/job data, or they are older than the TTL. Employer-side
+    | candidate matching prefers fresh persisted scores over live scoring.
+    |
+    */
+
+    'staleness' => [
+        'ttl_hours' => 24,
+        'use_persisted_matches' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Base Salary Currency
     |--------------------------------------------------------------------------
     |

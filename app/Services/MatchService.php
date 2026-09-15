@@ -18,7 +18,10 @@ use Illuminate\Support\Collection;
  */
 class MatchService
 {
-    public function __construct(protected JobMatchingService $engine) {}
+    public function __construct(
+        protected JobMatchingService $engine,
+        protected MatchChecksumService $checksums,
+    ) {}
 
     public function calculateMatchScore(User $candidate, Job $job): int
     {
@@ -72,6 +75,8 @@ class MatchService
             'missing_skills' => $matchData['missing_skills'],
             'matched_requirements' => $matchData['requirements_met'] ?? [],
             'missing_requirements' => $matchData['requirements_missing'] ?? [],
+            'algorithm_version' => (int) config('matching.algorithm_version', 0),
+            'data_checksum' => $this->checksums->for($application->candidate, $application->job),
             'scored_at' => now(),
             'is_latest' => true,
         ]);
@@ -90,7 +95,10 @@ class MatchService
             ->take($limit)
             ->map(fn (array $item) => [
                 'job' => $item['job'],
-                'match_percentage' => $item['overall_score'],
+                'match_percentage' => $item['profile_match_score'],
+                'match_score' => $item['profile_match_score'],
+                'recommendation_score' => $item['recommendation_score'],
+                'match_status' => $item['match_status'],
                 'category' => $item['category'],
                 'matched_skills' => $item['matched_skills'],
                 'missing_skills' => $item['missing_skills'],
@@ -108,6 +116,8 @@ class MatchService
             ->map(fn (array $item) => [
                 'candidate' => $item['candidate'],
                 'match_percentage' => $item['overall_score'],
+                'match_score' => $item['overall_score'],
+                'match_status' => $item['match_status'],
                 'category' => $item['category'],
                 'matched_skills' => $item['matched_skills'],
                 'missing_skills' => $item['missing_skills'],

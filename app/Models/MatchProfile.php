@@ -23,6 +23,8 @@ class MatchProfile extends Model
         'missing_skills',
         'matched_requirements',
         'missing_requirements',
+        'algorithm_version',
+        'data_checksum',
         'scored_at',
         'is_latest',
     ];

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminEmployerController;
 use App\Http\Controllers\Admin\AdminJobController;
 use App\Http\Controllers\Admin\AdminMessageController;
+use App\Http\Controllers\Admin\AdminMatchingAnalyticsController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVerificationController;
 use App\Http\Controllers\Admin\PersonalityAnalyticsController;
@@ -39,6 +40,7 @@ use App\Http\Controllers\PersonalityAssessmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicJobController;
 use App\Http\Controllers\PublicMarketplaceController;
+use App\Http\Controllers\RecommendationFeedbackController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -136,6 +138,10 @@ Route::middleware(['auth', 'role:candidate'])->group(function () {
 
     Route::get('/candidate/recommended-jobs', [CandidateRecommendationController::class, 'index'])
         ->name('candidate.recommended-jobs');
+
+    Route::post('/candidate/recommended-jobs/feedback', [RecommendationFeedbackController::class, 'candidate'])
+        ->middleware('throttle:30,1')
+        ->name('candidate.feedback.store');
 
     Route::get('/candidate/personality-assessment', [PersonalityAssessmentController::class, 'start'])
         ->name('candidate.personality.start');
@@ -263,6 +269,9 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
     Route::post('/employer/marketplace/candidates/{candidate}/shortlist', [EmployerMarketplaceController::class, 'shortlist'])
         ->name('employer.marketplace.shortlist');
 
+    Route::post('/employer/marketplace/candidates/{candidate}/feedback', [RecommendationFeedbackController::class, 'employer'])
+        ->name('employer.feedback.store');
+
     Route::get('/employer/marketplace/candidates/{candidate}', [EmployerMarketplaceController::class, 'showCandidate'])
         ->name('employer.marketplace.candidate');
 
@@ -369,6 +378,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/jobs/{job}', [AdminJobController::class, 'show'])->name('admin.jobs.show');
 
         Route::get('/analytics', [AdminAnalyticsController::class, 'index'])->name('admin.analytics');
+
+        Route::get('/matching-analytics', [AdminMatchingAnalyticsController::class, 'index'])
+            ->name('admin.matching.analytics');
 
         Route::get('/verifications', [AdminVerificationController::class, 'index'])->name('admin.verifications.index');
         Route::get('/verifications/pending', [AdminVerificationController::class, 'pending'])->name('admin.verifications.pending');

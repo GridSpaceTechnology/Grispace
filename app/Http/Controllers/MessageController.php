@@ -14,6 +14,7 @@ use App\Models\Message;
 use App\Models\MessageRead as MessageReadModel;
 use App\Models\User;
 use App\Notifications\NewMessageNotification;
+use App\Services\MatchOutcomeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,8 @@ class MessageController extends Controller
     ];
 
     private const MAX_ATTACHMENT_SIZE = 10240;
+
+    public function __construct(protected MatchOutcomeService $outcomes) {}
 
     public function index(Request $request): View|JsonResponse
     {
@@ -217,6 +220,8 @@ class MessageController extends Controller
                 'job_id' => $jobId,
                 'last_message_at' => now(),
             ]);
+
+            $this->outcomes->contactMade($user, $recipient, $conversation->id);
         }
 
         return response()->json([

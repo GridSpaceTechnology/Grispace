@@ -5,12 +5,13 @@ namespace App\Jobs;
 use App\Models\User;
 use App\Services\MatchingEngineService;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class RecalculateCandidateMatches implements ShouldQueue
+class RecalculateCandidateMatches implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -18,7 +19,24 @@ class RecalculateCandidateMatches implements ShouldQueue
 
     public array $backoff = [30, 120];
 
-    public function __construct(public User $candidate) {}
+    public int $timeout = 600;
+
+    public function __construct(public User $candidate)
+    {
+        $this->queue = 'matching';
+    }
+
+    // No two recalculation jobs for the same candidate should ever be queued
+    // at once, so a flurry of profile edits cannot pile up duplicate work.
+    public function uniqueId(): string
+    {
+        return "candidate-match-recalc:{$this->candidate->id}";
+    }
+
+    public function uniqueFor(): int
+    {
+        return 3600;
+    }
 
     public function handle(MatchingEngineService $engine): void
     {

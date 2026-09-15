@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\EmployerShortlist;
+use App\Models\Job;
 use App\Models\User;
 use App\Services\AI\CandidateInsightService;
 use App\Services\MatchingEngine;
+use App\Services\MatchOutcomeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,10 +17,13 @@ class EmployerMarketplaceController extends Controller
 
     protected CandidateInsightService $insightService;
 
-    public function __construct(MatchingEngine $matchingEngine, CandidateInsightService $insightService)
+    protected MatchOutcomeService $outcomes;
+
+    public function __construct(MatchingEngine $matchingEngine, CandidateInsightService $insightService, MatchOutcomeService $outcomes)
     {
         $this->matchingEngine = $matchingEngine;
         $this->insightService = $insightService;
+        $this->outcomes = $outcomes;
     }
 
     public function index(Request $request)
@@ -153,6 +158,8 @@ class EmployerMarketplaceController extends Controller
     {
         $user = Auth::user();
 
+        $this->outcomes->candidateProfileViewed($user, $candidate);
+
         $candidate->load([
             'candidateProfile',
             'candidateSkills',
@@ -226,6 +233,9 @@ class EmployerMarketplaceController extends Controller
             'candidate_id' => $candidate->id,
             'job_id' => $request->get('job_id'),
         ]);
+
+        $job = $request->get('job_id') ? Job::find($request->get('job_id')) : null;
+        $this->outcomes->candidateShortlisted($user, $candidate, $job);
 
         return redirect()->back()->with('success', 'Candidate shortlisted successfully!');
     }

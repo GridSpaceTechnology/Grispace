@@ -7,6 +7,7 @@ use App\Http\Resources\JobResource;
 use App\Models\Job;
 use App\Services\CandidateBehavioralProfileService;
 use App\Services\JobSearchService;
+use App\Services\MatchOutcomeService;
 use App\Services\MatchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class MarketplaceController extends Controller
         private JobSearchService $searchService,
         private MatchService $matchService,
         private CandidateBehavioralProfileService $behavior,
+        private MatchOutcomeService $outcomes,
     ) {}
 
     public function searchJobs(Request $request): AnonymousResourceCollection
@@ -78,6 +80,7 @@ class MarketplaceController extends Controller
 
         if (auth()->check() && auth()->user()->isCandidate()) {
             $this->behavior->recordView(auth()->user(), $job);
+            $this->outcomes->jobViewed(auth()->user(), $job);
 
             $response['match_score'] = $this->matchService->calculateMatchScore(auth()->user(), $job);
             $response['has_applied'] = auth()->user()
@@ -112,7 +115,7 @@ class MarketplaceController extends Controller
 
         $jobs = $matches->pluck('job')->each(function ($job) use ($matches) {
             $match = $matches->firstWhere('job.id', $job->id);
-            $job->match_score = $match['match_score'] ?? 0;
+            $job->match_score = $match['match_score'] ?? $match['match_percentage'] ?? 0;
         });
 
         $jobs->load(['company', 'jobSkills.skill']);
@@ -128,7 +131,7 @@ class MarketplaceController extends Controller
 
         $candidates = $matches->pluck('candidate')->each(function ($candidate) use ($matches) {
             $match = $matches->firstWhere('candidate.id', $candidate->id);
-            $candidate->match_score = $match['match_score'] ?? 0;
+            $candidate->match_score = $match['match_score'] ?? $match['match_percentage'] ?? 0;
         });
 
         $candidates->load([
@@ -167,10 +170,11 @@ class MarketplaceController extends Controller
         $application = $candidate->jobApplications()->create([
             'job_id' => $job->id,
             'status' => 'applied',
-            'match_score_snapshot' => $matchScore,
+            'match_score' => $matchScore,
         ]);
 
         $this->behavior->recordApply($candidate, $job);
+        $this->outcomes->jobApplied($candidate, $job, $application, $matchScore);
 
         return response()->json([
             'message' => 'Application submitted successfully',

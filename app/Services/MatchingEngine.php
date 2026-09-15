@@ -55,7 +55,10 @@ class MatchingEngine
 
                 return [
                     'job' => $item['job'],
-                    'match_percentage' => $item['overall_score'],
+                    'match_percentage' => $item['profile_match_score'],
+                    'match_score' => $item['profile_match_score'],
+                    'recommendation_score' => $item['recommendation_score'],
+                    'match_status' => $item['match_status'],
                     'category' => $item['category'],
                     'matched_skills' => $item['matched_skills'],
                     'missing_skills' => $item['missing_skills'],

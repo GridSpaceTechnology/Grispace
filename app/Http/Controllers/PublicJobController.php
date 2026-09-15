@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Job;
 use App\Services\CandidateBehavioralProfileService;
+use App\Services\MatchOutcomeService;
 use Illuminate\Http\Request;
 
 class PublicJobController extends Controller
 {
     public function __construct(
         protected CandidateBehavioralProfileService $behavior,
+        protected MatchOutcomeService $outcomes,
     ) {}
 
     public function index(Request $request)
@@ -52,6 +54,7 @@ class PublicJobController extends Controller
 
         if ($viewer && $viewer->isCandidate()) {
             $this->behavior->recordView($viewer, $job);
+            $this->outcomes->jobViewed($viewer, $job);
 
             if (! $viewer->isSuspendedForUnverifiedEmail()) {
                 $company = $job->company ?? $job->employer?->company;

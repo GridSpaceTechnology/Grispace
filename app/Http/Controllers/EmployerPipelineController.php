@@ -10,6 +10,7 @@ use App\Notifications\ApplicationOffer;
 use App\Notifications\ApplicationRejected;
 use App\Notifications\ApplicationShortlisted;
 use App\Services\MatchingEngine;
+use App\Services\MatchOutcomeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,9 +18,12 @@ class EmployerPipelineController extends Controller
 {
     protected MatchingEngine $matchingEngine;
 
-    public function __construct(MatchingEngine $matchingEngine)
+    protected MatchOutcomeService $outcomes;
+
+    public function __construct(MatchingEngine $matchingEngine, MatchOutcomeService $outcomes)
     {
         $this->matchingEngine = $matchingEngine;
+        $this->outcomes = $outcomes;
     }
 
     public function index(Job $job)
@@ -82,6 +86,8 @@ class EmployerPipelineController extends Controller
 
             $application->candidate->notify(new ApplicationRejected($application));
 
+            $this->outcomes->applicationRejected($application, (string) $request->input('reason'));
+
             return redirect()->back()->with('success', 'Candidate has been rejected.');
         }
 
@@ -118,6 +124,12 @@ class EmployerPipelineController extends Controller
             ]);
 
             $this->sendStageNotification($application, $nextStatus);
+
+            $this->outcomes->applicationAdvanced($application, $nextStatus);
+
+            if ($nextStatus === JobApplication::STATUS_HIRED) {
+                $this->outcomes->hireRecorded($application);
+            }
 
             return redirect()->back()->with('success', 'Candidate moved to next stage.');
         }

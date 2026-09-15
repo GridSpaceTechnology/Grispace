@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Services\JobMatchingService;
+use App\Services\MatchOutcomeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CandidateRecommendationController extends Controller
 {
-    public function __construct(protected JobMatchingService $matchingEngine) {}
+    public function __construct(
+        protected JobMatchingService $matchingEngine,
+        protected MatchOutcomeService $outcomes,
+    ) {}
 
     public function index(Request $request)
     {
@@ -32,6 +36,10 @@ class CandidateRecommendationController extends Controller
         ]);
 
         $jobs = $this->matchingEngine->recommendJobsForCandidate($user, $filters, 12);
+
+        foreach ($jobs->items() as $rank => $item) {
+            $this->outcomes->jobRecommended($user, $item['job'], $item, $rank + 1);
+        }
 
         return view('candidate.recommended-jobs', [
             'jobs' => $jobs,

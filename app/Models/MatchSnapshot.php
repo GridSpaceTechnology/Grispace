@@ -2,26 +2,20 @@
 
 namespace App\Models;
 
-use App\Services\JobMatchingService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class JobMatchScore extends Model
+class MatchSnapshot extends Model
 {
     protected $fillable = [
         'candidate_id',
         'job_id',
-        'skills_fit_score',
-        'personality_fit_score',
-        'culture_fit_score',
-        'temperament_fit_score',
-        'overall_match_score',
+        'source',
+        'algorithm_version',
+        'profile_match_score',
         'recommendation_score',
         'match_status',
-        'algorithm_version',
-        'data_checksum',
-        'expires_at',
-        'skill_score',
+        'skills_score',
         'role_score',
         'experience_score',
         'personality_score',
@@ -31,11 +25,8 @@ class JobMatchScore extends Model
         'availability_score',
         'matched_skills',
         'missing_skills',
-        'strengths',
-        'gaps',
-        'reasons',
+        'data_checksum',
         'scored_at',
-        'is_latest',
     ];
 
     protected function casts(): array
@@ -43,12 +34,7 @@ class JobMatchScore extends Model
         return [
             'matched_skills' => 'array',
             'missing_skills' => 'array',
-            'strengths' => 'array',
-            'gaps' => 'array',
-            'reasons' => 'array',
             'scored_at' => 'datetime',
-            'expires_at' => 'datetime',
-            'is_latest' => 'boolean',
         ];
     }
 
@@ -62,8 +48,16 @@ class JobMatchScore extends Model
         return $this->belongsTo(Job::class, 'job_id');
     }
 
-    public function category(): string
+    public function band(): string
     {
-        return app(JobMatchingService::class)->categoryFor($this->overall_match_score);
+        return match (true) {
+            $this->profile_match_score >= 90 => '90-100',
+            $this->profile_match_score >= 80 => '80-89',
+            $this->profile_match_score >= 70 => '70-79',
+            $this->profile_match_score >= 60 => '60-69',
+            $this->profile_match_score >= 40 => '40-59',
+            $this->profile_match_score >= 20 => '20-39',
+            default => '0-19',
+        };
     }
 }

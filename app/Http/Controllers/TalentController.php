@@ -6,7 +6,7 @@ use App\Http\Resources\CandidateCardResource;
 use App\Models\Job;
 use App\Models\User;
 use App\Services\CandidateSearchService;
-use App\Services\MatchService;
+use App\Services\MatchingEngineService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -14,7 +14,7 @@ class TalentController extends Controller
 {
     public function __construct(
         private CandidateSearchService $searchService,
-        private MatchService $matchService,
+        private MatchingEngineService $matchingEngine,
     ) {}
 
     public function search(Request $request): JsonResponse
@@ -68,7 +68,10 @@ class TalentController extends Controller
         $perPage = $filters['per_page'] ?? 15;
         $sortBy = $filters['sort_by'] ?? 'match_score';
 
-        $matches = $this->matchService->getTopMatchingCandidates($job, 100);
+        // Prefer freshly persisted scores so large candidate pools are not
+        // re-scored on every request; stale rows are discarded and topped up
+        // from live scoring automatically.
+        $matches = $this->matchingEngine->getCachedTopMatchingCandidates($job, 100);
 
         if ($sortBy === 'match_score') {
             $matches = $matches->sortByDesc('match_score');

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\CandidateBehavioralProfileService;
 use App\Services\MatchingEngine;
 use App\Services\MatchingEngineService;
+use App\Services\MatchOutcomeService;
 use App\Services\ProfileCompletionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,14 +21,18 @@ class CandidateDashboardController extends Controller
 
     protected CandidateBehavioralProfileService $behavior;
 
+    protected MatchOutcomeService $outcomes;
+
     public function __construct(
         MatchingEngine $matchingEngine,
         MatchingEngineService $matchingEngineService,
         CandidateBehavioralProfileService $behavior,
+        MatchOutcomeService $outcomes,
     ) {
         $this->matchingEngine = $matchingEngine;
         $this->matchingEngineService = $matchingEngineService;
         $this->behavior = $behavior;
+        $this->outcomes = $outcomes;
     }
 
     public function index(Request $request)
@@ -50,6 +55,13 @@ class CandidateDashboardController extends Controller
         $recommendedJobs = $personalityProfile?->assessment_completed
             ? $this->matchingEngineService->getTopMatchingJobs($user, 5)
             : collect();
+
+        // A job already surfaced by the personalized list should not repeat
+        // in the generic matching list.
+        if ($recommendedJobs->isNotEmpty()) {
+            $recommendedJobIds = $recommendedJobs->pluck('job.id')->all();
+            $matchingJobs = $matchingJobs->reject(fn (array $match) => in_array($match['job']->id, $recommendedJobIds, true))->values();
+        }
 
         $completionService = app(ProfileCompletionService::class);
         $completion = $completionService->sync($user);
@@ -99,6 +111,7 @@ class CandidateDashboardController extends Controller
         }
 
         $this->behavior->recordApply($user, $job);
+        $this->outcomes->jobApplied($user, $job, $application, $matchScores['total_score'] ?? 0);
 
         return back()->with('success', 'Application submitted successfully!');
     }

@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Interview;
 use App\Models\Job;
+use App\Models\JobApplication;
 use App\Models\User;
+use App\Notifications\InterviewScheduled;
+use App\Services\MatchOutcomeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class EmployerInterviewController extends Controller
 {
+    public function __construct(protected MatchOutcomeService $outcomes) {}
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -66,6 +70,8 @@ class EmployerInterviewController extends Controller
             'status' => Interview::STATUS_SCHEDULED,
         ]);
 
+        $this->outcomes->interviewScheduled($interview);
+
         return redirect()->route('employer.interviews.index')
             ->with('success', 'Interview scheduled successfully!');
     }
@@ -111,6 +117,8 @@ class EmployerInterviewController extends Controller
         $this->authorize('update', $interview);
 
         $interview->update(['status' => Interview::STATUS_COMPLETED]);
+
+        $this->outcomes->interviewCompleted($interview);
 
         return redirect()->route('employer.interviews.index')
             ->with('success', 'Interview marked as completed!');
@@ -163,6 +171,8 @@ class EmployerInterviewController extends Controller
             'notes' => $validated['notes'] ?? null,
             'status' => Interview::STATUS_SCHEDULED,
         ]);
+
+        $this->outcomes->interviewScheduled($interview);
 
         $application->update([
             'status' => JobApplication::STATUS_INTERVIEW,

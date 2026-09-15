@@ -154,6 +154,31 @@
                                     </div>
                                 @endforeach
                             </div>
+                            <div class="mt-3 text-xs text-gray-500">
+                                Profile match <span class="font-semibold text-gray-700">{{ $item['profile_match_score'] ?? $item['overall_score'] }}%</span>
+                                @if(($item['recommendation_score'] ?? null) !== null && $item['recommendation_score'] !== ($item['profile_match_score'] ?? $item['overall_score']))
+                                    · ranked at <span class="font-semibold text-gray-700">{{ $item['recommendation_score'] }}%</span>
+                                @endif
+                                · <span class="capitalize">{{ $item['match_status'] ?? $item['category'] }}</span>
+                            </div>
+                        </details>
+
+                        <details class="relative z-20 mt-3">
+                            <summary class="text-xs font-medium text-slate-400 hover:text-slate-600 cursor-pointer select-none">
+                                Not a fit? Tell us why
+                            </summary>
+                            <div class="mt-2">
+                                <form method="POST" action="{{ route('candidate.feedback.store') }}" class="flex flex-wrap gap-1.5">
+                                    @csrf
+                                    <input type="hidden" name="job_id" value="{{ $job->id }}">
+                                    @foreach(['not_relevant' => 'Not relevant', 'not_interested' => 'Not interested', 'wrong_role' => 'Wrong role', 'wrong_location' => 'Wrong location'] as $value => $label)
+                                        <button type="submit" name="feedback" value="{{ $value }}"
+                                                class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[11px] transition-colors">
+                                            {{ $label }}
+                                        </button>
+                                    @endforeach
+                                </form>
+                            </div>
                         </details>
 
                         <a href="{{ route('jobs.show', ['job' => $job]) }}"
