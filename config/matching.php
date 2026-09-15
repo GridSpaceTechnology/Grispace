@@ -87,7 +87,7 @@ return [
     |
     */
 
-    'algorithm_version' => 3,
+    'algorithm_version' => 5,
 
     /*
     |--------------------------------------------------------------------------
@@ -238,7 +238,18 @@ return [
 
         // Human-readable labels per algorithm version for analytics reports.
         'versions' => [
-            3 => 'v3 (current)',
+            3 => 'v3 (deterministic)',
+            4 => 'v4 (deterministic + behavioral)',
+            5 => 'v5 (semantic-enabled)',
+        ],
+
+        // Phase 5 experiment arms. All arms share identical hard gates,
+        // thresholds and component weights; only the semantic ranking layer
+        // is toggled. 5A records deterministic + behavioral results, 5B adds
+        // the bounded semantic understanding layer.
+        'arms' => [
+            '5a' => ['label' => 'v5A (deterministic + behavioral)', 'semantic' => false],
+            '5b' => ['label' => 'v5B (+ semantic understanding)', 'semantic' => true],
         ],
     ],
 
@@ -568,5 +579,149 @@ return [
                 'collaboration_styles' => ['Highly Collaborative', 'Balanced Collaborator'],
             ],
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Semantic Understanding Layer (Phase 5)
+    |--------------------------------------------------------------------------
+    |
+    | A bounded, explainable ranking refinement built ON TOP of the
+    | deterministic professional score. It never replaces the engine, never
+    | satisfies a required skill, never crosses the domain gate, and never
+    | invents experience or qualifications. Its only effect is a capped,
+    | additive nudge to the candidate-facing and employer-facing
+    | recommendation score so semantically-aligned but differently-worded
+    | pairs (Backend Developer vs Backend Engineer, Postgres vs PostgreSQL)
+    | rank slightly higher - while an excellent structured match always
+    | outranks a poor one, semantic or not.
+    |
+    | The layer is opt-in. When disabled (default) ranking behaves exactly
+    | like the deterministic engine (the 5A experiment arm). Enabling it
+    | selects the 5B arm without changing any hard rule.
+    |
+    */
+
+    'semantic' => [
+
+        // Master toggle. Off by default so deployed ranking is unchanged
+        // until the operator opts in via SEMANTIC_MATCHING_ENABLED.
+        'enabled' => (bool) env('SEMANTIC_MATCHING_ENABLED', false),
+
+        // score: 'lexical'  - deterministic local vocabulary/taxonomy provider
+        //                     (zero cost, zero latency, zero data sent away).
+        //         'embeddings' - configured hosted embedding provider behind
+        //                     the queue jobs below. Retrieval-only on hot
+        //                     paths; generation is queued and idempotent.
+        'provider' => env('EMBEDDING_PROVIDER', 'lexical'),
+
+        // Maximum ranking points the semantic score may add on top of the
+        // professional profile score. Deliberately small so structure always
+        // dominates: an excellent match (>= 90) cannot be overtaken by a
+        // weak one (<= 60) no matter how semantically similar.
+        'maximum_influence' => 15,
+
+        // Semantic scores are capped at this value when the candidate and job
+        // belong to different professional domains, preserving the
+        // separation the deterministic gate already enforces.
+        'incompatible_cap' => 20,
+
+        // Weighted blend for the 0-100 semantic score. Intended to sum to 1.
+        'weights' => [
+            'role' => 0.35,
+            'skill' => 0.35,
+            'description' => 0.20,
+            'domain' => 0.10,
+        ],
+
+        // Description similarity is only reported when the job description
+        // is long enough to be meaningful; short/noisy text is skipped.
+        'min_description_chars' => 100,
+
+        // Maximum evidence-based reasons surfaced to the UI per match.
+        'reasons_max' => 3,
+
+        // Include the employer company name/description in the job
+        // representation (employer-side context for both directions).
+        'include_company' => true,
+
+        // Role phrases treated as semantically equal when comparing the
+        // candidate's desired role against the job title/role. These are a
+        // ranking refinement only; the deterministic role component owns the
+        // gating signal.
+        'role_synonym_groups' => [
+            ['backend', 'back-end', 'back end', 'server-side', 'server side'],
+            ['frontend', 'front-end', 'front end', 'client-side', 'client side'],
+            ['full-stack', 'full stack', 'fullstack'],
+            ['api', 'rest', 'restful', 'web api', 'web service', 'web-service'],
+            ['database', 'database administrator', 'dba'],
+            ['software', 'application', 'app'],
+            ['accountant', 'accounting', 'accounts', 'bookkeeper', 'bookkeeping', 'finance', 'financial'],
+            ['nurse', 'nursing', 'registered nurse', 'nurse practitioner'],
+        ],
+
+        // Skill spellings that mean the same thing. Aliased BEFORE a match is
+        // counted so "PostgreSQL" on a job can match "Postgres" on a profile
+        // for the semantic score - but never for required-skill satisfaction,
+        // which stays exact and deterministic. Java and JavaScript are NOT
+        // aliased, so they remain distinct skills.
+        'skill_aliases' => [
+            'restful' => 'rest api',
+            'rest' => 'rest api',
+            'rest apis' => 'rest api',
+            'restful api' => 'rest api',
+            'restful apis' => 'rest api',
+            'rest api' => 'rest api',
+            'rest apis api' => 'rest api',
+            'postgresql' => 'postgres',
+            'postgres' => 'postgres',
+            'nodejs' => 'node',
+            'node.js' => 'node',
+            'react.js' => 'react',
+            'reactjs' => 'react',
+            'next.js' => 'nextjs',
+            'next' => 'nextjs',
+            'angularjs' => 'angular',
+            'golang' => 'go',
+            'typescript' => 'typescript',
+            'ts' => 'typescript',
+            'c#' => 'c sharp',
+            'c++' => 'c plus plus',
+            'php' => 'php',
+        ],
+
+        // Peer-language vocabulary used for description-level similarity.
+        'stopwords' => [
+            'a', 'an', 'the', 'of', 'and', 'or', 'in', 'on', 'for', 'to',
+            'with', 'at', 'by', 'is', 'are', 'be', 'as', 'we', 'you', 'our',
+            'your', 'this', 'that', 'will', 'can', 'must', 'may', 'well',
+            'join', 'team', 'role', 'work', 'using', 'use', 'experience',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Embedding Provider (optional)
+    |--------------------------------------------------------------------------
+    |
+    | Settings for the hosted embedding provider used only when
+    | semantic.provider is 'embeddings'. Embedding vectors live in the
+    | semantic_embeddings table; they are generated asynchronously by the
+    | GenerateCandidateSemanticEmbedding / GenerateJobSemanticEmbedding
+    | queue jobs and refreshed by the semantic:refresh command. All input is
+    | the privacy-filtered representation built by SemanticMatchingService -
+    | names, emails, phone numbers and private notes are never embedded.
+    |
+    */
+
+    'embedding' => [
+        'model' => env('EMBEDDING_MODEL', 'text-embedding-3-small'),
+        'api_key' => env('EMBEDDING_API_KEY', ''),
+        'api_url' => env('EMBEDDING_API_URL', 'https://api.openai.com/v1/embeddings'),
+        'timeout_seconds' => 30,
+        // Respect provider rate limits by spacing generations out this much.
+        'min_interval_ms' => 800,
+        // Bump this to invalidate and regenerate every stored vector.
+        'version' => '2026-09-15',
     ],
 ];

@@ -45,5 +45,17 @@ class RecalculateCandidateMatches implements ShouldBeUnique, ShouldQueue
         }
 
         $engine->recalculateForCandidate($this->candidate->refresh());
+
+        // Semantic vectors become stale whenever the profile changes; queue a
+        // regeneration so the embedding provider (when enabled) stays current.
+        if ($this->semanticEmbedsEnabled()) {
+            GenerateCandidateSemanticEmbedding::dispatch($this->candidate);
+        }
+    }
+
+    private function semanticEmbedsEnabled(): bool
+    {
+        return (bool) config('matching.semantic.enabled', false)
+            && config('matching.semantic.provider', 'lexical') === 'embeddings';
     }
 }

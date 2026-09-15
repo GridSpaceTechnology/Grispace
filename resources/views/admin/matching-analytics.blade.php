@@ -176,6 +176,58 @@
     </div>
 </div>
 
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">Semantic Layer</h2>
+            <p class="text-xs text-gray-500 mt-1">Bounded, explainable ranking refinement. Active: <span class="font-medium {{ $semantic['enabled'] ? 'text-green-600' : 'text-gray-700' }}">{{ $semantic['enabled'] ? 'ENABLED' : 'disabled' }}</span>, provider <span class="font-medium">{{ $semantic['provider'] }}</span>, max influence <span class="font-medium">{{ $semantic['maximum_influence'] }}pt</span>.</p>
+        </div>
+        @if($semantic['recent_failures'] > 0)
+            <span class="text-xs text-red-600 font-medium">{{ $semantic['recent_failures'] }} failures in the last 24h</span>
+        @endif
+    </div>
+    <div class="px-6 py-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Stored Embeddings</p>
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-gray-500 border-b border-gray-100">
+                        <th class="py-2">Entity</th>
+                        <th class="py-2">Model</th>
+                        <th class="py-2">Version</th>
+                        <th class="py-2">Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($semantic['vectors'] as $vector)
+                        <tr class="border-b border-gray-50">
+                            <td class="py-2 capitalize">{{ $vector['entity_type'] }} <span class="text-gray-400">({{ $vector['provider'] }})</span></td>
+                            <td class="py-2">{{ $vector['model'] }}</td>
+                            <td class="py-2">{{ $vector['embedding_version'] }}</td>
+                            <td class="py-2">{{ $vector['total'] }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4" class="py-2 text-gray-400">No embeddings generated yet (runs on the daily refresh / recalculate jobs).</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Generation Health</p>
+            <ul class="space-y-1">
+                @forelse($semantic['health'] as $key => $count)
+                    <li class="flex justify-between text-sm">
+                        <span class="text-gray-700">{{ ucwords(str_replace(':', ' → ', $key)) }}</span>
+                        <span class="font-semibold {{ str_contains($key, 'failure') ? 'text-red-600' : '' }}">{{ $count }}</span>
+                    </li>
+                @empty
+                    <li class="text-sm text-gray-400">No generation health events recorded yet.</li>
+                @endforelse
+            </ul>
+        </div>
+    </div>
+</div>
+
 <div class="bg-white rounded-xl shadow-sm border border-gray-200">
     <div class="px-6 py-4 border-b border-gray-100">
         <h2 class="text-lg font-semibold text-gray-900">Engine Configuration (read-only)</h2>

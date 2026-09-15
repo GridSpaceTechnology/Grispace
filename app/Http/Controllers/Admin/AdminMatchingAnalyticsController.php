@@ -31,6 +31,7 @@ class AdminMatchingAnalyticsController extends Controller
             'experiments' => (bool) config('matching.experiments.live_routing', false),
             'weights' => config('matching.weights', []),
             'thresholds' => config('matching.thresholds', []),
+            'semantic' => $this->analytics->semanticReport(),
         ]);
     }
 }

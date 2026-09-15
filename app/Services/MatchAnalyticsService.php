@@ -7,6 +7,8 @@ use App\Models\CandidateRecommendationFeedback;
 use App\Models\EmployerRecommendationFeedback;
 use App\Models\MatchOutcomeEvent;
 use App\Models\MatchSnapshot;
+use App\Models\SemanticEmbedding;
+use App\Models\SemanticHealthEvent;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -247,5 +249,49 @@ class MatchAnalyticsService
             ->map(fn (MatchOutcomeEvent $event) => "{$event->candidate_id}:{$event->job_id}")
             ->unique()
             ->values();
+    }
+
+    /**
+     * Semantic-layer operational report: whether the layer is active, how many
+     * vectors exist per entity/provider, and the recent health of generation.
+     * Aggregate-only; exposes no candidate or job identifiers.
+     */
+    public function semanticReport(): array
+    {
+        $active = config('matching.semantic.enabled', false);
+
+        $embeddings = SemanticEmbedding::query()
+            ->select('entity_type', 'provider', 'model', 'embedding_version', DB::raw('count(*) as total'))
+            ->groupBy('entity_type', 'provider', 'model', 'embedding_version')
+            ->orderBy('entity_type')
+            ->get();
+
+        $health = SemanticHealthEvent::query()
+            ->select('action', 'status', DB::raw('count(*) as total'))
+            ->groupBy('action', 'status')
+            ->orderByDesc('total')
+            ->get()
+            ->mapWithKeys(fn (SemanticHealthEvent $event) => [
+                $event->action.':'.$event->status => (int) $event->total,
+            ])
+            ->all();
+
+        return [
+            'enabled' => $active,
+            'provider' => config('matching.semantic.provider', 'lexical'),
+            'maximum_influence' => (int) config('matching.semantic.maximum_influence', 15),
+            'recent_failures' => SemanticHealthEvent::query()
+                ->where('status', 'failure')
+                ->where('created_at', '>=', now()->subDay())
+                ->count(),
+            'vectors' => count($embeddings) > 0 ? $embeddings->map(fn ($row) => [
+                'entity_type' => $row->entity_type,
+                'provider' => $row->provider,
+                'model' => $row->model,
+                'embedding_version' => $row->embedding_version,
+                'total' => (int) $row->total,
+            ])->all() : [],
+            'health' => $health,
+        ];
     }
 }

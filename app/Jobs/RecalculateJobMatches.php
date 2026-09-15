@@ -47,5 +47,12 @@ class RecalculateJobMatches implements ShouldBeUnique, ShouldQueue
         }
 
         $engine->recalculateForJob($job);
+
+        // Semantic vectors become stale whenever the listing changes; queue a
+        // regeneration so the embedding provider (when enabled) stays current.
+        if ((bool) config('matching.semantic.enabled', false)
+            && config('matching.semantic.provider', 'lexical') === 'embeddings') {
+            GenerateJobSemanticEmbedding::dispatch($this->jobListing);
+        }
     }
 }

@@ -5,13 +5,14 @@ namespace App\Services;
 use App\Models\EmployerCultureProfile;
 use App\Models\Job;
 use App\Models\User;
+use App\Services\Semantic\SemanticMatchingService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
- * Canonical, deterministic GridSpace matching engine.
+ * Canonical GridSpace matching engine.
  *
  * Produces an explainable 0-100 compatibility score between a candidate and
  * a job using eight weighted components configured in config/matching.php.
@@ -27,12 +28,22 @@ use Illuminate\Support\Str;
  * recommendJobsForCandidate. It can nudge an already-compatible match but can
  * never override the professional domain gate, and it is never consumed by
  * the employer-facing candidate ranking path.
+ *
+ * Phase 5 semantic understanding (config/matching.php semantic block) layers a
+ * second, equally bounded ranking modifier that understands wording variance
+ * (Backend Developer vs Backend Engineer, Postgres vs PostgreSQL). It is
+ * opt-in, additive-only, capped by semantic.maximum_influence, never satisfies
+ * a required skill, never crosses the domain gate and never runs for
+ * incompatible pairs - so an excellent structured match always outranks a weak
+ * one regardless of semantic similarity. Its evidence is surfaced in the
+ * semantic_similarity/semantic_reasons fields of ranking items.
  */
 class JobMatchingService
 {
     public function __construct(
         protected CandidateBehavioralProfileService $behavior,
         protected CandidateFeedbackSignalService $feedbackSignals,
+        protected SemanticMatchingService $semantic,
     ) {}
 
     public function overall(User $candidate, Job $job): int
@@ -247,7 +258,7 @@ class JobMatchingService
      *
      * Additional filters: min_score, exclude_applied.
      *
-     * @return Collection<int, array{job: Job, overall_score: int, profile_match_score: int, recommendation_score: int, final_score: int, match_status: string, behavioral_relevance: int, behavioral_reasons: array, category: string, matched_skills: array, missing_skills: array, top_reasons: array, hard_gaps: array, soft_gaps: array}>
+     * @return Collection<int, array{job: Job, overall_score: int, profile_match_score: int, recommendation_score: int, final_score: int, match_status: string, behavioral_relevance: int, behavioral_reasons: array, semantic_similarity: ?int, semantic_points: int, semantic_reasons: array, semantic_details: array, semantic_provider: ?string, semantic_fallback: bool, category: string, matched_skills: array, missing_skills: array, top_reasons: array, hard_gaps: array, soft_gaps: array}>
      */
     public function recommendJobsForCandidate(User $candidate, array $filters = [], int $perPage = 12): LengthAwarePaginator
     {
@@ -283,7 +294,9 @@ class JobMatchingService
                     $breakdown
                 );
 
-                $recommendationScore = min(100, $breakdown['profile_match_score'] + $boost);
+                $semantic = $this->semantic->forPair($candidate, $job, $breakdown);
+
+                $recommendationScore = min(100, $breakdown['profile_match_score'] + $boost + $semantic['points']);
 
                 $recommendationScore = $this->applyNegativeSignals($candidate, $job, $recommendationScore);
 
@@ -296,6 +309,12 @@ class JobMatchingService
                     'match_status' => $breakdown['match_status'],
                     'behavioral_relevance' => $relevance,
                     'behavioral_reasons' => $behaviorReasons,
+                    'semantic_similarity' => $semantic['score'],
+                    'semantic_points' => $semantic['points'],
+                    'semantic_reasons' => $semantic['reasons'],
+                    'semantic_details' => $semantic['details'],
+                    'semantic_provider' => $semantic['provider'],
+                    'semantic_fallback' => $semantic['fallback'],
                     'category' => $breakdown['category'],
                     'matched_skills' => array_slice($breakdown['matched_skills'], 0, 5),
                     'missing_skills' => array_slice($breakdown['missing_skills'], 0, 3),
@@ -321,7 +340,7 @@ class JobMatchingService
      * data is exposed. Deterministic hard-prune filters run before scoring, and
      * applied candidates can be excluded with the exclude_applied filter.
      *
-     * @return Collection<int, array{candidate: User, overall_score: int, profile_match_score: int, recommendation_score: int, match_status: string, category: string, matched_skills: array, missing_skills: array, strengths: array}>
+     * @return Collection<int, array{candidate: User, overall_score: int, profile_match_score: int, recommendation_score: int, match_status: string, category: string, semantic_similarity: ?int, semantic_points: int, semantic_reasons: array, semantic_details: array, semantic_provider: ?string, semantic_fallback: bool, matched_skills: array, missing_skills: array, strengths: array}>
      */
     public function rankCandidatesForJob(Job $job, array $filters = [], int $perPage = 12): LengthAwarePaginator
     {
@@ -353,13 +372,21 @@ class JobMatchingService
             ->map(function (User $candidate) use ($job) {
                 $breakdown = $this->calculateBreakdown($candidate, $job);
 
+                $semantic = $this->semantic->forPair($candidate, $job, $breakdown, 'employer');
+
                 return [
                     'candidate' => $candidate,
                     'overall_score' => $breakdown['overall_score'],
                     'profile_match_score' => $breakdown['profile_match_score'],
-                    'recommendation_score' => $breakdown['recommendation_score'],
+                    'recommendation_score' => min(100, $breakdown['recommendation_score'] + $semantic['points']),
                     'match_status' => $breakdown['match_status'],
                     'category' => $breakdown['category'],
+                    'semantic_similarity' => $semantic['score'],
+                    'semantic_points' => $semantic['points'],
+                    'semantic_reasons' => $semantic['reasons'],
+                    'semantic_details' => $semantic['details'],
+                    'semantic_provider' => $semantic['provider'],
+                    'semantic_fallback' => $semantic['fallback'],
                     'matched_skills' => array_slice($breakdown['matched_skills'], 0, 5),
                     'missing_skills' => array_slice($breakdown['missing_skills'], 0, 4),
                     'strengths' => array_slice($breakdown['strengths'], 0, 3),
