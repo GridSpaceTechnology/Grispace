@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\CandidateProfile;
+use App\Models\CandidateRecommendationFeedback;
 use App\Models\CandidateSkill;
 use App\Models\Company;
 use App\Models\Job;
+use App\Models\MatchOutcomeEvent;
+use App\Models\MatchSnapshot;
 use App\Models\User;
 use App\Services\CandidateBehavioralProfileService;
 use App\Services\JobMatchingService;
@@ -18,7 +21,6 @@ use Carbon\Carbon;
  * outcome/snapshot layer with synthetic data only (no real personal data).
  * Helpers use the phase4 prefix so they never collide with older matching tests.
  */
-
 function phase4Employer(): User
 {
     $user = User::factory()->create(['role' => 'employer']);
@@ -246,17 +248,20 @@ it('GOLDEN: behavioral interest boosts the ranking score but never the profile s
 });
 
 it('GOLDEN: candidate dismiss feedback moves a job down without touching the profile score', function () {
+    config(['matching.recommendation.dedupe_identical_jobs' => false]);
+
     $candidate = phase4Candidate(skills: ['PHP', 'Laravel', 'MySQL', 'Docker']);
     $employer = phase4Employer();
 
     $target = phase4Job($employer, ['slug' => 'target'.str()->random(6)]);
-    phase4Job($employer, ['title' => 'Backend API Engineer', 'slug' => 'api'.str()->random(6)]);
-    phase4Job($employer, ['title' => 'Backend Platform Engineer', 'role' => 'Platform Engineer', 'slug' => 'platform'.str()->random(6)]);
+    $sibling = phase4Job($employer, ['slug' => 'sibling'.str()->random(6)]);
 
-    $items = phase4RecommendationItems($candidate);
-    $before = collect($items)->firstWhere('job.id', $target->id);
+    $before = collect(phase4RecommendationItems($candidate))
+        ->firstWhere('job.id', $target->id);
+    $siblingBefore = collect(phase4RecommendationItems($candidate))
+        ->firstWhere('job.id', $sibling->id);
 
-    App\Models\CandidateRecommendationFeedback::create([
+    CandidateRecommendationFeedback::create([
         'candidate_id' => $candidate->id,
         'job_id' => $target->id,
         'feedback_type' => 'not_relevant',
@@ -266,9 +271,12 @@ it('GOLDEN: candidate dismiss feedback moves a job down without touching the pro
 
     $itemsAfter = phase4RecommendationItems($candidate);
     $after = collect($itemsAfter)->firstWhere('job.id', $target->id);
+    $siblingAfter = collect($itemsAfter)->firstWhere('job.id', $sibling->id);
     $afterIndex = collect($itemsAfter)->search(fn ($item) => $item['job']->id === $target->id);
 
-    expect($after['recommendation_score'])->toBeLessThan($before['recommendation_score'])
+    expect($before['recommendation_score'])->toBe($siblingBefore['recommendation_score'])
+        ->and($after['recommendation_score'])->toBeLessThan($before['recommendation_score'])
+        ->and($after['recommendation_score'])->toBeLessThan($siblingAfter['recommendation_score'])
         ->and($after['profile_match_score'])->toBe($before['profile_match_score'])
         ->and($after['match_status'])->toBe($before['match_status'])
         ->and($afterIndex)->toBe(count($itemsAfter) - 1);
@@ -283,12 +291,12 @@ it('GOLDEN: the measurement layer records recommended jobs with rank and algorit
 
     app(MatchOutcomeService::class)->jobRecommended($candidate, $job, $item, 1);
 
-    $snapshot = App\Models\MatchSnapshot::where('candidate_id', $candidate->id)
+    $snapshot = MatchSnapshot::where('candidate_id', $candidate->id)
         ->where('job_id', $job->id)
         ->where('source', MatchSnapshotService::SOURCE_RECOMMENDED)
         ->first();
 
-    $event = App\Models\MatchOutcomeEvent::where('event_type', 'job_recommended')->first();
+    $event = MatchOutcomeEvent::where('event_type', 'job_recommended')->first();
 
     expect($snapshot)->not->toBeNull()
         ->and($snapshot->algorithm_version)->toBe((int) config('matching.algorithm_version'))
